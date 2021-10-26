@@ -1,6 +1,6 @@
 library(tseries)
 
-VIX = get.hist.quote('^GSPC', provider = 'yahoo')
+VIX = get.hist.quote('^GSPC', provider = 'yahoo', end = "2021-10-06")
 plot(VIX$Close, main="S&P 500 ", xlab = "Date", ylab = "Price")
 
 VIX.return = diff(log(VIX$Close))
@@ -31,5 +31,8 @@ plot(e_plus)
 e_min = pmin(VIX.return, numeric(length(VIX.return)))
 plot(e_min)
 
-ccf(e_plus, abs(VIX.return), na.action = na.remove)
-ccf(-e_min, abs(VIX.return), na.action = na.remove)
+ccf(abs(VIX.return), e_plus, na.action = na.remove)
+ccf(abs(VIX.return), -e_min, na.action = na.remove)
+
+adf.test(VIX.return, k=0)
+
