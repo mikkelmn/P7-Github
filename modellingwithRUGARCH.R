@@ -57,10 +57,10 @@ egarchspec = ugarchspec(mean.model = list(armaOrder = c(0,0)),
                         variance.model = list(model = "eGARCH"),
                         distribution.model = "norm")
 egarchfit = ugarchfit(data = VIX, spec = egarchspec, 
-                      solver = "gosolnp", solver.control = list(tol = 100))
+                      solver = "gosolnp", 
+                      solver.control = list(tol = 10))
 e.vol.vix = sigma(egarchfit)
 plot(e.vol.vix)
-lines(vol.vix, col = "red")
 
 
 #modelling CBOE VIX using VIX
@@ -75,6 +75,7 @@ mod4=lm((VIX[-1]) ~ vol.ret + vol.vix[-1])
 plot(VIX[-1])
 lines(fitted(mod4), col = "red")
 MSE.g.retvix = MSE(y_pred = fitted(mod4), y_true = VIX) ; MSE.g.retvix # 8.125895
+
 
 
 #__________________________________________________________
