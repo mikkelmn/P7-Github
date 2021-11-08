@@ -1,28 +1,81 @@
 library(tseries)
 library(forecast)
+library(rugarch)
+library(MLmetrics)
+library(plot.matrix)
 
-VIX=get.hist.quote(instrument = "^VIX",provider = "yahoo",quote = "Close", 
-                   end = "2021-10-15")
-VIXret=diff(log(VIX))
+VIX=get.hist.quote(instrument = "^VIX",provider = "yahoo",
+                   quote = "Close", end = "2021-10-15")
 plot(VIX)
 
-SP=get.hist.quote(instrument = "^GSPC",provider = "yahoo",quote = "Close", 
-                  end = "2021-10-15")
+SP=get.hist.quote(instrument = "^GSPC",provider = "yahoo",
+                  quote = "Close", end = "2021-10-15")
 returns=diff(log(SP))
 plot(returns)
 
-library(rugarch)
-library(MLmetrics)
+# --------------------------------------------------------------
 
-#modelling returns using GARCH
-garchspec = ugarchspec(mean.model = list(armaOrder = c(0,0)), 
-                       variance.model = list(model = "sGARCH"),
+# Creating loop for fitting the best GARCH model according to AIC and BIC
+aic_garch = matrix(0,5,5)
+bic_garch = matrix(0,5,5)
+
+for (i in 1:5) {
+  for (j in 1:5) {
+    garch_spec = ugarchspec(variance.model = list(garchOrder=c(i,j), 
+                                                  model = "sGARCH"), 
+                            mean.model = list(armaOrder=c(0,0),
+                                              include.mean = FALSE),
+                            distribution.model = "norm")
+    garch_fit = ugarchfit(spec=garch_spec, data=returns,
+                          solver.control=list(trace = 1))
+    aic_garch[i,j] = infocriteria(garch_fit)[1]
+    bic_garch[i,j] = infocriteria(garch_fit)[2]
+  }
+}
+aic_garch
+bic_garch
+which(min(aic_garch) == aic_garch)
+which(min(bic_garch) == bic_garch)
+
+par(mar=c(5, 6, 4, 8))
+plot(aic_garch, col=heat.colors(n = 10, alpha = 0.9))
+plot(bic_garch, col=heat.colors(n = 10, alpha = 0.9))
+dev.off
+
+# --------------------------------------------------------------
+
+# fitting GARCH(1,1) model to returns
+garch11spec = ugarchspec(mean.model = list(armaOrder = c(0,0), 
+                                           include.mean = FALSE), 
+                       variance.model = list(garchOrder = c(1,1), 
+                                             model = "sGARCH"),
                        distribution.model = "norm")
-garchfit = ugarchfit(data = returns, spec = garchspec)
-vol.ret = sigma(garchfit)
-plot(vol.ret)
+garch11fit = ugarchfit(data = returns, spec = garch11spec)
+vol_ret_garch11 = sigma(garch11fit)
+plot(vol_ret_garch11)
 
-#modelling returns using EGARCH
+# fitting GARCH(2,2) model to returns
+garch22spec = ugarchspec(mean.model = list(armaOrder = c(0,0), 
+                                           include.mean = FALSE), 
+                         variance.model = list(garchOrder = c(2,2), 
+                                               model = "sGARCH"),
+                         distribution.model = "norm")
+garch22fit = ugarchfit(data = returns, spec = garch22spec)
+vol_ret_garch22 = sigma(garch22fit)
+plot(vol_ret_garch22)
+
+plot(residuals(garch11fit))
+plot(residuals(garch11fit, standardize = T))
+garch11fit
+
+
+
+
+
+
+
+
+# fitting GARCH(1,1) model to returns using EGARCH
 egarchspec = ugarchspec(mean.model = list(armaOrder = c(0,0)), 
                         variance.model = list(model = "eGARCH"),
                         distribution.model = "norm")
@@ -35,12 +88,14 @@ lines(vol.ret, col = "red")
 mod1=lm((VIX[-1]) ~ vol.ret)
 plot(VIX[-1])
 lines(fitted(mod1), col = "red")
-MSE.g.ret = MSE(y_pred = fitted(mod1), y_true = VIX) ; MSE.g.ret # 14.03579
+MSE.g.ret = MSE(y_pred = fitted(mod1), y_true = VIX)
+MSE.g.ret # 14.03579
 
 mod2=lm((VIX[-1]) ~ e.vol.ret)
 plot(VIX[-1])
 lines(fitted(mod2), col = "red")
-MSE.eg.ret = MSE(y_pred = fitted(mod2), y_true = VIX) ; MSE.eg.ret # 13.3777
+MSE.eg.ret = MSE(y_pred = fitted(mod2), y_true = VIX)
+MSE.eg.ret # 13.3777
 
 
 
@@ -67,18 +122,20 @@ plot(e.vol.vix)
 mod3=lm((VIX) ~ vol.vix)
 plot(VIX)
 lines(fitted(mod3), col = "red")
-MSE.g.vix = MSE(y_pred = fitted(mod3), y_true = VIX) ; MSE.g.vix # 9.448859
+MSE.g.vix = MSE(y_pred = fitted(mod3), y_true = VIX)
+MSE.g.vix # 9.448859
 
 
 #modelling CBOE VIX using returns and VIX
 mod4=lm((VIX[-1]) ~ vol.ret + vol.vix[-1])
 plot(VIX[-1])
 lines(fitted(mod4), col = "red")
-MSE.g.retvix = MSE(y_pred = fitted(mod4), y_true = VIX) ; MSE.g.retvix # 8.125895
+MSE.g.retvix = MSE(y_pred = fitted(mod4), y_true = VIX)
+MSE.g.retvix # 8.125895
 
 
 
-#__________________________________________________________
+# --------------------------------------------------------------
 # rolling forecast
 
 train = returns[1:7656]
@@ -94,6 +151,6 @@ plot(garchroll)
 
 # forecast
 garchfitfore = ugarchfit(data = returns, spec = garchspec, out.sample = 1000)
-foremod = ugarchforecast(fitORspec = garchfitfore, data = returns, n.ahead = 100, 
-                         out.sample = 1000, n.roll = 10)
+foremod = ugarchforecast(fitORspec = garchfitfore, data = returns, 
+                         n.ahead = 100, out.sample = 1000, n.roll = 10)
 plot(foremod)
