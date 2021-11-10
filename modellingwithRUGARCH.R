@@ -20,11 +20,11 @@ curve(dnorm(x, mean = mean(returns), sd = sd(returns)), add = TRUE, col = "red")
 
 # --------------------------------------------------------------
 
-# Creating loop for fitting the best GARCH model according to AIC and BIC
+# Creating loop for finding GARCH orders according to AIC and BIC
 
 # distribution assumed to be Gaussian --------------------------
-aic_garch = matrix(0,5,5)
-bic_garch = matrix(0,5,5)
+aic_garch_norm = matrix(0,5,5)
+bic_garch_norm = matrix(0,5,5)
 
 for (i in 1:5) {
   for (j in 1:5) {
@@ -35,18 +35,20 @@ for (i in 1:5) {
                             distribution.model = "norm")
     garch_fit = ugarchfit(spec=garch_spec, data=returns,
                           solver.control=list(trace = 1))
-    aic_garch[i,j] = infocriteria(garch_fit)[1]
-    bic_garch[i,j] = infocriteria(garch_fit)[2]
+    aic_garch_norm[i,j] = infocriteria(garch_fit)[1]
+    bic_garch_norm[i,j] = infocriteria(garch_fit)[2]
   }
 }
-aic_garch
-bic_garch
-which(min(aic_garch) == aic_garch)
-which(min(bic_garch) == bic_garch)
+aic_garch_norm
+bic_garch_norm
+which(min(aic_garch_norm) == aic_garch_norm)
+which(min(bic_garch_norm) == bic_garch_norm)
 
 par(mar=c(5, 6, 4, 8))
-plot(aic_garch, col=heat.colors(n = 10, alpha = 0.9))
-plot(bic_garch, col=heat.colors(n = 10, alpha = 0.9))
+plot(aic_garch_norm, col=heat.colors(n = 10, alpha = 0.9), 
+     main = "AIC, GARCH models with Gaussian Distribution")
+plot(bic_garch_norm, col=heat.colors(n = 10, alpha = 0.9), 
+     main = "BIC, GARCH models with Gaussian Distribution")
 dev.off
 
 # distribution assumed to be student T -------------------------
@@ -61,7 +63,8 @@ for (i in 1:5) {
                             mean.model = list(armaOrder=c(0,0),
                                               include.mean = FALSE),
                             distribution.model = "std")
-    garch_fit = ugarchfit(spec=garch_spec, data=returns,
+    garch_fit = ugarchfit(spec=garch_spec, data=returns, 
+                          solver = "gosolnp",
                           solver.control=list(trace = 1))
     aic_garch_t[i,j] = infocriteria(garch_fit)[1]
     bic_garch_t[i,j] = infocriteria(garch_fit)[2]
@@ -73,12 +76,11 @@ bic_garch_t
 which(min(aic_garch_t) == aic_garch_t)
 which(min(bic_garch_t) == bic_garch_t)
 
-aic_garch_t[aic_garch_t == 0] = NA
-bic_garch_t[bic_garch_t == 0] = NA
-
 par(mar=c(5, 6, 4, 8))
-plot(aic_garch_t, col=heat.colors(n = 10, alpha = 0.9))
-plot(bic_garch_t, col=heat.colors(n = 10, alpha = 0.9))
+plot(aic_garch_t, col=heat.colors(n = 10, alpha = 0.9), 
+     main = "AIC, GARCH models with Student T Distribution")
+plot(bic_garch_t, col=heat.colors(n = 10, alpha = 0.9), 
+     main = "BIC, GARCH models with Student T Distribution")
 dev.off
 
 # assuming Generalized Error Distribution ----------------------
@@ -106,37 +108,67 @@ which(min(aic_garch_ged) == aic_garch_ged)
 which(min(bic_garch_ged) == bic_garch_ged)
 
 par(mar=c(5, 6, 4, 8))
-plot(aic_garch_ged, col=heat.colors(n = 10, alpha = 0.9))
-plot(bic_garch_ged, col=heat.colors(n = 10, alpha = 0.9))
+plot(aic_garch_ged, col=heat.colors(n = 10, alpha = 0.9), 
+     main = "AIC, GARCH models with GGD")
+plot(bic_garch_ged, col=heat.colors(n = 10, alpha = 0.9), 
+     main = "BIC, GARCH models with GGD")
 dev.off
 
 
 # --------------------------------------------------------------
 
+# checking which distribution seems to be most accurate --------
+min(aic_garch_norm)
+min(aic_garch_t)
+min(aic_garch_ged)
+min(bic_garch_norm)
+min(bic_garch_t)
+min(bic_garch_ged)
+
+# fitting GARCH models -----------------------------------------
+
 # fitting GARCH(1,1) model to returns
-garch11spec = ugarchspec(mean.model = list(armaOrder = c(0,0), 
+garch11spec_norm = ugarchspec(mean.model = list(armaOrder = c(0,0), 
                                            include.mean = FALSE), 
                        variance.model = list(garchOrder = c(1,1), 
                                              model = "sGARCH"),
                        distribution.model = "norm")
-garch11fit = ugarchfit(data = returns, spec = garch11spec)
-vol_ret_garch11 = sigma(garch11fit)
-plot(vol_ret_garch11)
+garch11fit_norm = ugarchfit(data = returns, spec = garch11spec_norm)
+plot(sigma(garch11fit_norm))
 
 # fitting GARCH(2,2) model to returns
-garch22spec = ugarchspec(mean.model = list(armaOrder = c(0,0), 
+garch22spec_norm = ugarchspec(mean.model = list(armaOrder = c(0,0), 
                                            include.mean = FALSE), 
                          variance.model = list(garchOrder = c(2,2), 
                                                model = "sGARCH"),
                          distribution.model = "norm")
-garch22fit = ugarchfit(data = returns, spec = garch22spec)
-vol_ret_garch22 = sigma(garch22fit)
-plot(vol_ret_garch22)
+garch22fit_norm = ugarchfit(data = returns, spec = garch22spec_norm)
+plot(sigma(garch22fit_norm))
 
-# model validation
-garch11fit
-res = residuals(garch11fit)
-res_standardized = residuals(garch11fit, standardize = T)
+# fitting GARCH(2,2) model to returns assuming Student T Distribution
+garch22spec_std = ugarchspec(mean.model = list(armaOrder = c(0,0), 
+                                           include.mean = FALSE), 
+                         variance.model = list(garchOrder = c(2,2), 
+                                               model = "sGARCH"),
+                         distribution.model = "std")
+garch22fit_std = ugarchfit(data = returns, spec = garch22spec_std, 
+                           solver="gosolnp")
+plot(sigma(garch22fit_std))
+
+# fitting GARCH(2,2) model to returns using Generalized Gaussian Distribution
+garch22spec_ged = ugarchspec(mean.model = list(armaOrder = c(0,0), 
+                                               include.mean = FALSE), 
+                             variance.model = list(garchOrder = c(2,2), 
+                                                   model = "sGARCH"),
+                             distribution.model = "ged")
+garch22fit_ged = ugarchfit(data = returns, spec = garch22spec_ged)
+plot(sigma(garch22fit_ged))
+
+# model validation ---------------------------------------------
+
+garch11fit_norm
+res = residuals(garch11fit_norm)
+res_standardized = residuals(garch11fit_norm, standardize = T)
 plot(res)
 plot(res_standardized) # should approach normal distribution
 acf(x = res_standardized^2) # should not be autocorrelated
@@ -146,18 +178,32 @@ qqnorm(res_standardized)
 qqline(res_standardized)
 shapiro.test(res[1:500])
 
-plot(garch11fit, which = 3) # Conditional SD
-plot(garch11fit, which = 8) # Density of Stand. Res.
-plot(garch11fit, which = 9) # QQ-PLot of Stand. Res.
-plot(garch11fit, which = 10) # ACF of Stand. Res.
-plot(garch11fit, which = 11) # ACF of Squared Stand. Res.
+plot(garch11fit_norm, which = 3) # Conditional SD
+plot(garch11fit_norm, which = 8) # Density of Stand. Res.
+plot(garch11fit_norm, which = 9) # QQ-PLot of Stand. Res.
+plot(garch11fit_norm, which = 10) # ACF of Stand. Res.
+plot(garch11fit_norm, which = 11) # ACF of Squared Stand. Res.
 
-plot(garch22fit, which = 3) # Conditional SD
-plot(garch22fit, which = 8) # Density of Stand. Res.
-plot(garch22fit, which = 9) # QQ-PLot of Stand. Res.
-plot(garch22fit, which = 10) # ACF of Stand. Res.
-plot(garch22fit, which = 11) # ACF of Squared Stand. Res.
+plot(garch22fit_norm, which = 3) # Conditional SD
+plot(garch22fit_norm, which = 8) # Density of Stand. Res.
+plot(garch22fit_norm, which = 9) # QQ-PLot of Stand. Res.
+plot(garch22fit_norm, which = 10) # ACF of Stand. Res.
+plot(garch22fit_norm, which = 11) # ACF of Squared Stand. Res.
 
+plot(garch22fit_std, which = 3) # Conditional SD
+plot(garch22fit_std, which = 8) # Density of Stand. Res.
+plot(garch22fit_std, which = 9) # QQ-PLot of Stand. Res.
+plot(garch22fit_std, which = 10) # ACF of Stand. Res.
+plot(garch22fit_std, which = 11) # ACF of Squared Stand. Res.
+
+plot(garch22fit_ged, which = 3) # Conditional SD
+plot(garch22fit_ged, which = 8) # Density of Stand. Res.
+plot(garch22fit_ged, which = 9) # QQ-PLot of Stand. Res.
+plot(garch22fit_ged, which = 10) # ACF of Stand. Res.
+plot(garch22fit_ged, which = 11) # ACF of Squared Stand. Res.
+
+
+# --------------------------------------------------------------
 
 # fitting GARCH(1,1) model to returns using EGARCH
 egarchspec = ugarchspec(mean.model = list(armaOrder = c(0,0)), 
