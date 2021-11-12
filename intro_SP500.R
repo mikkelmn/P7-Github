@@ -33,6 +33,41 @@ plot(e_min)
 
 ccf(abs(VIX.return), e_plus, na.action = na.remove)
 ccf(abs(VIX.return), -e_min, na.action = na.remove)
+lags = ccf(abs(VIX.return), VIX.return, na.action = na.remove)
+str(lags)
+lags$lag
+plot(lags[lags$lag[36:71],])
+
+
+
+# Kurtosis
+library(DistributionUtils)
+library(e1071)
+kurtosis(VIX.return)
+
+
+
+
+garch_spec = ugarchspec(variance.model = list(garchOrder=c(1,1), 
+                                              model = "fGARCH", submodel = "TGARCH"), 
+                        mean.model = list(armaOrder=c(0,0),
+                                          include.mean = FALSE),
+                        distribution.model = "std")
+garch_fit = ugarchfit(spec=garch_spec, data=VIX.return,
+                      solver.control=list(trace = 1))
+plot(garch_fit)
+garch_fit@fit$residuals
+
+k = c()
+for (i in 1:1000) {
+  x <- rnorm(n = length(garch_fit@fit$sigma), sd = 1, mean = 0)
+  eps = garch_fit@fit$sigma*x
+  k[i] = kurtosis(eps)
+}
+mean(k)
+x <- rnorm(n = length(garch_fit@fit$sigma), sd = 1, mean = 0)
+
+
 
 adf.test(VIX.return, k=0)
 
