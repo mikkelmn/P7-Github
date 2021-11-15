@@ -49,12 +49,13 @@ kurtosis(VIX.return)
 
 
 garch_spec = ugarchspec(variance.model = list(garchOrder=c(1,1), 
-                                              model = "fGARCH", submodel = "TGARCH"), 
+                                              model = "sGARCH"), 
                         mean.model = list(armaOrder=c(0,0),
                                           include.mean = FALSE),
-                        distribution.model = "std")
+                        distribution.model = "sstd")
 garch_fit = ugarchfit(spec=garch_spec, data=VIX.return,
                       solver.control=list(trace = 1))
+garch_fit
 plot(garch_fit)
 garch_fit@fit$residuals
 
