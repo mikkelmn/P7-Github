@@ -3,6 +3,8 @@ library(forecast)
 library(rugarch)
 library(MLmetrics)
 library(plot.matrix)
+library(tictoc)
+library(furrr)
 
 VIX=get.hist.quote(instrument = "^VIX",provider = "yahoo",
                    quote = "Close", end = "2021-10-15")
@@ -16,7 +18,57 @@ plot(returns)
 hist(returns, breaks = 100, xlim = c(-0.1,0.1), col = "lightblue", 
      border = "blue3", freq = F, xlab = "S&P 500 returns", 
      main = "Histogram of S&P 500 returns")
-curve(dnorm(x, mean = mean(returns), sd = sd(returns)), add = TRUE, col = "red")
+curve(dnorm(x, mean = mean(returns), sd = sd(returns)), 
+      add = TRUE, col = "red")
+
+# --------------------------------------------------------------
+
+# Creating loop in loop for finding GARCH and ARMA orders 
+# according to AIC and BIC, where distribution is assumed to be 
+# Gaussian -----------------------------------------------------
+
+aic_arma_order = matrix(0, nrow = 12, ncol = 12)
+bic_arma_order = matrix(0, nrow = 12, ncol = 12)
+plan(multisession, workers = 8)
+set.seed(91)
+tic()
+for (k in 0:2) {
+  for (l in 0:2) {
+    for (i in 1:4) {
+      for (j in 1:4) {
+        tryCatch({
+          garch_spec = ugarchspec(variance.model = list(garchOrder=c(i,j), 
+                                                        model = "sGARCH"), 
+                                  mean.model = list(armaOrder=c(k,l),
+                                                    include.mean = FALSE),
+                                  distribution.model = "norm")
+          garch_fit = ugarchfit(spec=garch_spec, data=returns,
+                                solver.control = list(trace = 1, n.restarts = 1),
+                                solver = "gosolnp",
+                                parallel = T, cores = 8)
+          aic_arma_order[(k*4+i),(l*4+j)] = infocriteria(garch_fit)[1]
+          bic_arma_order[(k*4+i),(l*4+j)] = infocriteria(garch_fit)[2]
+        }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
+      }
+    }
+  }
+}
+toc() # 700 sec
+
+aic_arma_order
+bic_arma_order
+
+aic_arma_order[aic_arma_order == 0] = NA
+bic_arma_order[bic_arma_order == 0] = NA
+
+par(mar=c(5, 4, 4, 5))
+plot(aic_arma_order, col=heat.colors(n = 10, alpha = 0.9), digits = 4, 
+     cex = 0.8)
+plot(bic_arma_order, col=heat.colors(n = 10, alpha = 0.9), digits = 4, 
+     cex = 0.8)
+which.min(aic_arma_order)
+which.min(bic_arma_order)
+
 
 # --------------------------------------------------------------
 
@@ -26,28 +78,35 @@ curve(dnorm(x, mean = mean(returns), sd = sd(returns)), add = TRUE, col = "red")
 aic_garch_norm = matrix(0,5,5)
 bic_garch_norm = matrix(0,5,5)
 
+tic()
 for (i in 1:5) {
   for (j in 1:5) {
-    garch_spec = ugarchspec(variance.model = list(garchOrder=c(i,j), 
-                                                  model = "sGARCH"), 
-                            mean.model = list(armaOrder=c(0,0),
-                                              include.mean = FALSE),
-                            distribution.model = "norm")
-    garch_fit = ugarchfit(spec=garch_spec, data=returns,
-                          solver.control=list(trace = 1))
-    aic_garch_norm[i,j] = infocriteria(garch_fit)[1]
-    bic_garch_norm[i,j] = infocriteria(garch_fit)[2]
+    tryCatch({
+      garch_spec = ugarchspec(variance.model = list(garchOrder=c(i,j), 
+                                                    model = "sGARCH"), 
+                              mean.model = list(armaOrder=c(0,0),
+                                                include.mean = FALSE),
+                              distribution.model = "norm")
+      garch_fit = ugarchfit(spec=garch_spec, data=returns, 
+                            solver = "gosolnp",
+                            solver.control=list(trace = 1))
+      aic_garch_norm[i,j] = infocriteria(garch_fit)[1]
+      bic_garch_norm[i,j] = infocriteria(garch_fit)[2]
+    }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
   }
 }
+toc()
 aic_garch_norm
 bic_garch_norm
 which(min(aic_garch_norm) == aic_garch_norm)
 which(min(bic_garch_norm) == bic_garch_norm)
 
-par(mar=c(5, 6, 4, 8))
-plot(aic_garch_norm, col=heat.colors(n = 10, alpha = 0.9), 
-     main = "AIC, GARCH models with Gaussian Distribution")
-plot(bic_garch_norm, col=heat.colors(n = 10, alpha = 0.9), 
+par(mar=c(5, 5, 4, 5))
+plot(aic_garch_norm, col=heat.colors(n = 10, alpha = 0.9), digits = 4,
+     main = "AIC, GARCH models with Gaussian Distribution",
+     xlab = expression(paste("Column, ", italic("q"), " order")), 
+     ylab = expression(paste("Row, ", italic("p"), " order")))
+plot(bic_garch_norm, col=heat.colors(n = 10, alpha = 0.9), digits = 4, 
      main = "BIC, GARCH models with Gaussian Distribution")
 dev.off
 
