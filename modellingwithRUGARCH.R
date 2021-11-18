@@ -1,18 +1,24 @@
 library(tseries)
+library(quantmod)
 library(forecast)
 library(rugarch)
 library(MLmetrics)
 library(plot.matrix)
 library(tictoc)
 library(furrr)
+library(tidyverse)
 
-VIX=get.hist.quote(instrument = "^VIX",provider = "yahoo",
-                   quote = "Close", end = "2021-10-15")
+#VIX = get.hist.quote(instrument = "^VIX",provider = "yahoo",
+#                   quote = "Close", end = "2021-10-15")
+getSymbols("^VIX", src = "yahoo", from = "1990-01-01", to = "2021-10-31")
+VIX = VIX$VIX.Close[-1]
 plot(VIX)
 
-SP=get.hist.quote(instrument = "^GSPC",provider = "yahoo",
-                  quote = "Close", end = "2021-10-15")
-returns=diff(log(SP))
+#SP = get.hist.quote(instrument = "^GSPC",provider = "yahoo",
+#                  quote = "Close", end = "2021-10-15")
+#returns=diff(log(SP))
+getSymbols("^GSPC", src = "yahoo", from = "1990-01-01", to = "2021-10-31")
+returns = diff(log(GSPC$GSPC.Close))[-1]
 plot(returns)
 
 hist(returns, breaks = 100, xlim = c(-0.1,0.1), col = "lightblue", 
@@ -264,7 +270,8 @@ plot(garch22fit_ged, which = 11) # ACF of Squared Stand. Res.
 
 # --------------------------------------------------------------
 
-# fitting GARCH(1,1) model to returns using EGARCH
+# LM model -----------------------------------------------------
+# fitting EGARCH(1,1) model to returns using EGARCH
 egarchspec = ugarchspec(mean.model = list(armaOrder = c(0,0)), 
                         variance.model = list(model = "eGARCH"),
                         distribution.model = "norm")
@@ -273,7 +280,7 @@ e.vol.ret = sigma(egarchfit)
 plot(e.vol.ret)
 lines(vol.ret, col = "red")
 
-#modelling CBOE VIX using returns
+# modelling CBOE VIX using returns
 mod1=lm((VIX[-1]) ~ vol.ret)
 plot(VIX[-1])
 lines(fitted(mod1), col = "red")
@@ -288,7 +295,7 @@ MSE.eg.ret # 13.3777
 
 
 
-#modelling VIX using GARCH
+# fitting GARCH(1,1) model to VIX
 garchspec = ugarchspec(mean.model = list(armaOrder = c(0,0)), 
                        variance.model = list(model = "sGARCH"),
                        distribution.model = "norm")
@@ -296,7 +303,7 @@ garchfit = ugarchfit(data = VIX, spec = garchspec)
 vol.vix = sigma(garchfit)
 plot(vol.vix)
 
-#modelling VIX using EGARCH (does not work)
+# fitting EGARCH(1,1) model to VIX (does not work)
 egarchspec = ugarchspec(mean.model = list(armaOrder = c(0,0)), 
                         variance.model = list(model = "eGARCH"),
                         distribution.model = "norm")
@@ -307,7 +314,7 @@ e.vol.vix = sigma(egarchfit)
 plot(e.vol.vix)
 
 
-#modelling CBOE VIX using VIX
+# modelling CBOE VIX using VIX
 mod3=lm((VIX) ~ vol.vix)
 plot(VIX)
 lines(fitted(mod3), col = "red")
@@ -315,7 +322,7 @@ MSE.g.vix = MSE(y_pred = fitted(mod3), y_true = VIX)
 MSE.g.vix # 9.448859
 
 
-#modelling CBOE VIX using returns and VIX
+# modelling CBOE VIX using returns and VIX
 mod4=lm((VIX[-1]) ~ vol.ret + vol.vix[-1])
 plot(VIX[-1])
 lines(fitted(mod4), col = "red")
@@ -327,19 +334,35 @@ MSE.g.retvix # 8.125895
 # --------------------------------------------------------------
 # rolling forecast
 
-train = returns[1:7656]
-garchspec = ugarchspec(mean.model = list(armaOrder = c(0,0)), 
-                       variance.model = list(model = "sGARCH"),
-                       distribution.model = "norm")
-garchroll=ugarchroll(spec = garchspec, data = train, n.ahead = 1, 
-                     n.start = 3000, refit.every = 300, 
-                     refit.window = "recursive")
+train = returns["/2020-12-31"]
+test = returns["2021-01-01/2021-10-31"]
+garchspec = ugarchspec(variance.model = list(garchOrder=c(1,1), 
+                                             model = "eGARCH"), 
+                       mean.model = list(armaOrder=c(0,0),
+                                         include.mean = T),
+                       distribution.model = "ged")
+garchroll=ugarchroll(spec = garchspec, data = returns, n.ahead = 1, 
+                     n.start = length(train), forecast.length = length(test), 
+                     refit.every = 30, refit.window = "recursive",
+                     solver = "solnp")
 pred = as.data.frame(garchroll)
-plot.ts(pred$Sigma)
-plot(garchroll)
+my_dates <- strptime(rownames(pred), format="%Y-%m-%d")
+ggplot(data = pred) + labs(x = "Date") +
+  geom_line(aes(x = as.Date(rownames(pred)), y = Sigma), col = "steelblue")
 
-# forecast
-garchfitfore = ugarchfit(data = returns, spec = garchspec, out.sample = 1000)
+plot(garchroll, which = 2)
+
+# forecast roll and static
+garchfitfore = ugarchfit(data = returns, spec = garchspec, 
+                         out.sample = length(test))
 foremod = ugarchforecast(fitORspec = garchfitfore, data = returns, 
-                         n.ahead = 100, out.sample = 1000, n.roll = 10)
-plot(foremod)
+                         n.ahead = 10, n.roll = length(test), 
+                         external.forecasts = list())
+plot(foremod, which = 4)
+
+plot.ts(foremod@model$modeldata$sigma)
+plot.ts(foremod@forecast$sigmaFor[1,])
+
+lm(VIX["/2020-12-31"] ~ sigma(garchfitfore))
+plot.ts(VIX["2021-01-01/2021-10-31"], ylim = c(10,40))
+lines(5.86+1379.83*foremod@forecast$sigmaFor[1,], col = "red")
