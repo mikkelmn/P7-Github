@@ -10,16 +10,18 @@ library(tidyverse)
 
 #VIX = get.hist.quote(instrument = "^VIX",provider = "yahoo",
 #                   quote = "Close", end = "2021-10-15")
-getSymbols("^VIX", src = "yahoo", from = "1990-01-01", to = "2021-10-31")
+getSymbols("^VIX", src = "yahoo", from = "1990-01-01", to = "2020-12-31")
 VIX = VIX$VIX.Close[-1]
 plot(VIX)
 
 #SP = get.hist.quote(instrument = "^GSPC",provider = "yahoo",
 #                  quote = "Close", end = "2021-10-15")
 #returns=diff(log(SP))
-getSymbols("^GSPC", src = "yahoo", from = "1990-01-01", to = "2021-10-31")
+getSymbols("^GSPC", src = "yahoo", from = "1990-01-01", to = "2020-12-31")
+par(mfrow=c(2,1))
+plot(GSPC$GSPC.Close, main = "S&P 500 index")
 returns = diff(log(GSPC$GSPC.Close))[-1]
-plot(returns)
+plot(returns, main = "Returns of the S&P 500")
 
 hist(returns, breaks = 100, xlim = c(-0.1,0.1), col = "lightblue", 
      border = "blue3", freq = F, xlab = "S&P 500 returns", 
@@ -200,6 +202,11 @@ garch11spec_norm = ugarchspec(mean.model = list(armaOrder = c(0,0),
                        distribution.model = "norm")
 garch11fit_norm = ugarchfit(data = returns, spec = garch11spec_norm)
 plot(sigma(garch11fit_norm))
+plot(garch11fit_norm)
+garch11fit_norm
+garch11fit_norm@fit$z*garch11fit_norm@fit$sigma - returns
+plot(garch11fit_norm@fit$z)
+
 
 # fitting GARCH(2,2) model to returns
 garch22spec_norm = ugarchspec(mean.model = list(armaOrder = c(0,0), 
@@ -219,6 +226,7 @@ garch22spec_std = ugarchspec(mean.model = list(armaOrder = c(0,0),
 garch22fit_std = ugarchfit(data = returns, spec = garch22spec_std, 
                            solver="gosolnp")
 plot(sigma(garch22fit_std))
+plot.ts(garch22fit_std@fit$z)
 
 # fitting GARCH(2,2) model to returns using Generalized Gaussian Distribution
 garch22spec_ged = ugarchspec(mean.model = list(armaOrder = c(0,0), 
@@ -228,6 +236,7 @@ garch22spec_ged = ugarchspec(mean.model = list(armaOrder = c(0,0),
                              distribution.model = "ged")
 garch22fit_ged = ugarchfit(data = returns, spec = garch22spec_ged)
 plot(sigma(garch22fit_ged))
+r
 
 # model validation ---------------------------------------------
 
@@ -366,3 +375,9 @@ plot.ts(foremod@forecast$sigmaFor[1,])
 lm(VIX["/2020-12-31"] ~ sigma(garchfitfore))
 plot.ts(VIX["2021-01-01/2021-10-31"], ylim = c(10,40))
 lines(5.86+1379.83*foremod@forecast$sigmaFor[1,], col = "red")
+
+
+
+#-------------------------------------------------------------------------------
+#----------------- The actual procedure (sGARCH) ----------------------------------------
+#-------------------------------------------------------------------------------
