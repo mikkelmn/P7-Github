@@ -29,7 +29,7 @@ dev.off
 # Model specification
 egarch33spec_norm = ugarchspec(mean.model = list(armaOrder = c(0,0), 
                                                 include.mean = TRUE), 
-                              variance.model = list(garchOrder = c(3,3), 
+                              variance.model = list(garchOrder = c(1,1), 
                                                     model = "eGARCH"),
                               distribution.model = "norm")
 egarch33fit_norm = ugarchfit(data = returns, spec = egarch33spec_norm, solver = "gosolnp",
@@ -76,22 +76,22 @@ dev.off
 
 
 # Model specification
-egarch43spec_sstd = ugarchspec(mean.model = list(armaOrder = c(0,0), 
+egarchspec_sstd = ugarchspec(mean.model = list(armaOrder = c(0,0), 
                                                 include.mean = TRUE), 
-                              variance.model = list(garchOrder = c(4,3), 
+                              variance.model = list(garchOrder = c(1,1), 
                                                     model = "eGARCH"),
                               distribution.model = "sstd")
-egarch43fit_sstd = ugarchfit(data = returns, spec = egarch43spec_sstd, solver = "gosolnp",
+egarchfit_sstd = ugarchfit(data = returns, spec = egarchspec_sstd, solver = "gosolnp",
                             solver.control=list(trace = 1))
-egarch43fit_sstd
+egarchfit_sstd
 
 # Model validation
 par(mfrow = c(1,2))
-acf(egarch43fit_sstd@fit$z, main = "ACF of the standardized residuals") # acf of the standardized residuals
-acf(egarch43fit_sstd@fit$z,  main = "ACF of the squared standardized residuals") # acf of (standardized residuals)^2 
+acf(egarchfit_sstd@fit$z, main = "ACF of the standardized residuals") # acf of the standardized residuals
+acf(egarchfit_sstd@fit$z,  main = "ACF of the squared standardized residuals") # acf of (standardized residuals)^2 
 par(mfrow = c(1,2))
-plot(egarch43fit_sstd, which = 9) # QQ plot of the standardized residuals
-plot(egarch43fit_sstd, which = 8)
+plot(egarchfit_sstd, which = 9) # QQ plot of the standardized residuals
+plot(egarchfit_sstd, which = 8)
 
 #-------------------------------------------------------------------------------
 
@@ -125,22 +125,22 @@ dev.off
 
 
 # Model specification
-egarch33spec_ged = ugarchspec(mean.model = list(armaOrder = c(0,0), 
+egarchspec_ged = ugarchspec(mean.model = list(armaOrder = c(0,0), 
                                                include.mean = TRUE), 
-                             variance.model = list(garchOrder = c(3,3), 
+                             variance.model = list(garchOrder = c(1,1), 
                                                    model = "eGARCH"),
                              distribution.model = "ged")
-egarch33fit_ged = ugarchfit(data = returns, spec = egarch33spec_ged, solver = "gosolnp",
+egarchfit_ged = ugarchfit(data = returns, spec = egarchspec_ged, solver = "gosolnp",
                            solver.control=list(trace = 1))
-egarch33fit_ged
+egarchfit_ged
 
 # Model validation
 par(mfrow = c(1,2))
-acf(egarch33fit_ged@fit$z, main = "ACF of the standardized residuals") # acf of the standardized residuals
-acf(egarch33fit_ged@fit$z,  main = "ACF of the squared standardized residuals") # acf of (standardized residuals)^2 
+acf(egarchfit_ged@fit$z, main = "ACF of the standardized residuals") # acf of the standardized residuals
+acf(egarchfit_ged@fit$z,  main = "ACF of the squared standardized residuals") # acf of (standardized residuals)^2 
 par(mfrow = c(1,2))
-plot(egarch33fit_ged, which = 9) # QQ plot of the standardized residuals
-plot(egarch33fit_ged, which = 8)
+plot(egarchfit_ged, which = 9) # QQ plot of the standardized residuals
+plot(egarchfit_ged, which = 8)
 
 #------------------------------------------------------------------------------
 # Simulations
