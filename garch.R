@@ -150,7 +150,7 @@ dev.off
 # --------------------------------------------------------------------------
 # Leverage effect
 ccf_norm = ccf(garch22fit_norm@fit$sigma, as.ts(returns))
-ccf_sstd = ccf(garch22fit_sstd@fit$sigma, as.ts(returns))
+ccf_sstd = ccf(garchfit_sstd@fit$sigma, as.ts(returns))
 ccf_ged = ccf(garch22fit_ged@fit$sigma, as.ts(returns))
 
 layout(matrix(c(0,1,1,0,2,2,3,3), 2, 4, byrow = TRUE))
