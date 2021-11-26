@@ -27,27 +27,29 @@ plot(bic_gjrgarch_norm, col=heat.colors(n = 10, alpha = 0.9), digits = 4,
 dev.off
 
 # Model specification
-gjrgarch31spec_norm = ugarchspec(mean.model = list(armaOrder = c(0,0), 
+gjrgarchspec_norm = ugarchspec(mean.model = list(armaOrder = c(0,0), 
                                                  include.mean = TRUE), 
-                               variance.model = list(garchOrder = c(3,1), 
+                               variance.model = list(garchOrder = c(1,1), 
                                                      model = "gjrGARCH"),
                                distribution.model = "norm")
-gjrgarch31fit_norm = ugarchfit(data = returns, spec = gjrgarch31spec_norm, solver = "gosolnp",
+gjrgarchfit_norm = ugarchfit(data = returns, spec = gjrgarchspec_norm, solver = "gosolnp",
                              solver.control=list(trace = 1))
-gjrgarch31fit_norm
+gjrgarchfit_norm
 
 # Model validation
 par(mfrow = c(1,2))
-acf(gjrgarch31fit_norm@fit$z, main = "ACF of the standardized residuals") # acf of the standardized residuals
-acf(gjrgarch31fit_norm@fit$z,  main = "ACF of the squared standardized residuals") # acf of (standardized residuals)^2 
+acf(gjrgarchfit_norm@fit$z, main = "ACF of the standardized residuals") # acf of the standardized residuals
+acf(gjrgarchfit_norm@fit$z,  main = "ACF of the squared standardized residuals") # acf of (standardized residuals)^2 
+dev.off
 par(mfrow = c(1,2))
-plot(gjrgarch31fit_norm, which = 9) # QQ plot of the standardized residuals
-plot(gjrgarch31fit_norm, which = 8)
+plot(gjrgarchfit_norm, which = 9) # QQ plot of the standardized residuals
+plot(gjrgarchfit_norm, which = 8)
+dev.off
 
 #-------------------------------------------------------------------------------
 
 # Determining GJR-GARCH for sstd distribution using AIC
-bic_gjrgarch_norm = matrix(0,5,5)
+bic_gjrgarch_sstd = matrix(0,5,5)
 for (i in 1:5) {
   for (j in 1:5) {
     tryCatch({
@@ -59,16 +61,16 @@ for (i in 1:5) {
       gjrgarch_fit = ugarchfit(spec=gjrgarch_spec, data=returns, 
                                solver = "gosolnp",
                                solver.control=list(trace = 1))
-      bic_gjrgarch_norm[i,j] = infocriteria(gjrgarch_fit)[2]
+      bic_gjrgarch_sstd[i,j] = infocriteria(gjrgarch_fit)[2]
     }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
   }
 }
 
-bic_gjrgarch_norm
-which(min(bic_gjrgarch_norm) == bic_gjrgarch_norm)
+bic_gjrgarch_sstd
+which(min(bic_gjrgarch_sstd) == bic_gjrgarch_sstd)
 
 par(mar=c(5, 5, 4, 5))
-plot(bic_gjrgarch_norm, col=heat.colors(n = 10, alpha = 0.9), digits = 4,
+plot(bic_gjrgarch_sstd, col=heat.colors(n = 10, alpha = 0.9), digits = 4,
      main = "BIC, GJR-GARCH models with SSTD",
      xlab = expression(paste("Column, ", italic("q"), " order")), 
      ylab = expression(paste("Row, ", italic("p"), " order")))
@@ -77,22 +79,24 @@ dev.off
 
 
 # Model specification
-gjrgarch31spec_sstd = ugarchspec(mean.model = list(armaOrder = c(0,0), 
+gjrgarchspec_sstd = ugarchspec(mean.model = list(armaOrder = c(0,0), 
                                                  include.mean = TRUE), 
-                               variance.model = list(garchOrder = c(3,1), 
+                               variance.model = list(garchOrder = c(1,1), 
                                                      model = "gjrGARCH"),
                                distribution.model = "sstd")
-gjrgarch31fit_sstd = ugarchfit(data = returns, spec = gjrgarch31spec_sstd, solver = "gosolnp",
+gjrgarchfit_sstd = ugarchfit(data = returns, spec = gjrgarchspec_sstd, solver = "gosolnp",
                              solver.control=list(trace = 1))
-gjrgarch31fit_sstd
+gjrgarchfit_sstd
 
 # Model validation
 par(mfrow = c(1,2))
-acf(gjrgarch31fit_sstd@fit$z, main = "ACF of the standardized residuals") # acf of the standardized residuals
-acf(gjrgarch31fit_sstd@fit$z,  main = "ACF of the squared standardized residuals") # acf of (standardized residuals)^2 
+acf(gjrgarchfit_sstd@fit$z, main = "ACF of the standardized residuals") # acf of the standardized residuals
+acf(gjrgarchfit_sstd@fit$z,  main = "ACF of the squared standardized residuals") # acf of (standardized residuals)^2 
+dev.off
 par(mfrow = c(1,2))
-plot(gjrgarch31fit_sstd, which = 9) # QQ plot of the standardized residuals
-plot(gjrgarch31fit_sstd, which = 8)
+plot(gjrgarchfit_sstd, which = 9) # QQ plot of the standardized residuals
+plot(gjrgarchfit_sstd, which = 8)
+dev.off
 
 #-------------------------------------------------------------------------------
 
@@ -126,25 +130,26 @@ dev.off
 
 
 # Model specification
-gjrgarch31spec_ged = ugarchspec(mean.model = list(armaOrder = c(0,0), 
+gjrgarchspec_ged = ugarchspec(mean.model = list(armaOrder = c(0,0), 
                                                 include.mean = TRUE), 
-                              variance.model = list(garchOrder = c(3,1), 
+                              variance.model = list(garchOrder = c(1,1), 
                                                     model = "gjrGARCH"),
                               distribution.model = "ged")
-gjrgarch31fit_ged = ugarchfit(data = returns, spec = gjrgarch31spec_ged, solver = "gosolnp",
+gjrgarchfit_ged = ugarchfit(data = returns, spec = gjrgarchspec_ged, solver = "gosolnp",
                             solver.control=list(trace = 1))
-gjrgarch31fit_ged
+gjrgarchfit_ged
 
 # Model validation
 par(mfrow = c(1,2))
-acf(gjrgarch31fit_ged@fit$z, main = "ACF of the standardized residuals") # acf of the standardized residuals
-acf(gjrgarch31fit_ged@fit$z,  main = "ACF of the squared standardized residuals") # acf of (standardized residuals)^2 
+acf(gjrgarchfit_ged@fit$z, main = "ACF of the standardized residuals") # acf of the standardized residuals
+acf(gjrgarchfit_ged@fit$z,  main = "ACF of the squared standardized residuals") # acf of (standardized residuals)^2 
+dev.off
 par(mfrow = c(1,2))
-plot(gjrgarch31fit_ged, which = 9) # QQ plot of the standardized residuals
-plot(gjrgarch31fit_ged, which = 8)
+plot(gjrgarchfit_ged, which = 9) # QQ plot of the standardized residuals
+plot(gjrgarchfit_ged, which = 8)
+dev.off
 
-
-# Simulations
+# Simulations ----
 # SSTD
 sim = ugarchsim(fit = gjrgarch31fit_sstd, n.sim = length(returns), n.start = 0, m.sim = 1000, rseed = NA)
 kurt = kurtosis(sim@simulation$seriesSim)
