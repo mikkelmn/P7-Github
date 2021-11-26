@@ -1,4 +1,4 @@
-# Determining eGARCH for normal distribution using AIC
+# Determining tGARCH for normal distribution using AIC
 bic_tgarch_norm = matrix(0,5,5)
 for (i in 1:5) {
   for (j in 1:5) {
@@ -27,23 +27,24 @@ plot(bic_tgarch_norm, col=heat.colors(n = 10, alpha = 0.9), digits = 4,
 dev.off
 
 # Model specification
-tgarch41spec_norm = ugarchspec(mean.model = list(armaOrder = c(0,0), 
+tgarchspec_norm = ugarchspec(mean.model = list(armaOrder = c(0,0), 
                                                  include.mean = TRUE), 
-                               variance.model = list(garchOrder = c(4,1), 
+                               variance.model = list(garchOrder = c(1,1), 
                                                      model = "fGARCH", submodel = "TGARCH"),
                                distribution.model = "norm")
-tgarch41fit_norm = ugarchfit(data = returns, spec = tgarch41spec_norm, solver = "gosolnp",
+tgarchfit_norm = ugarchfit(data = returns, spec = tgarchspec_norm, solver = "gosolnp",
                              solver.control=list(trace = 1))
-tgarch41fit_norm
+tgarchfit_norm
 
 # Model validation
 par(mfrow = c(1,2))
-acf(tgarch41fit_norm@fit$z, main = "ACF of the standardized residuals") # acf of the standardized residuals
-acf(tgarch41fit_norm@fit$z,  main = "ACF of the squared standardized residuals") # acf of (standardized residuals)^2 
+acf(tgarchfit_norm@fit$z, main = "ACF of the standardized residuals") # acf of the standardized residuals
+acf(tgarchfit_norm@fit$z,  main = "ACF of the squared standardized residuals") # acf of (standardized residuals)^2 
+dev.off
 par(mfrow = c(1,2))
-plot(tgarch41fit_norm, which = 9) # QQ plot of the standardized residuals
-plot(tgarch41fit_norm, which = 8)
-
+plot(tgarchfit_norm, which = 9) # QQ plot of the standardized residuals
+plot(tgarchfit_norm, which = 8)
+dev.off
 #-------------------------------------------------------------------------------
 
 # Determining tGARCH for sstd distribution using AIC
@@ -76,23 +77,24 @@ dev.off
 
 
 # Model specification
-tgarch11spec_sstd = ugarchspec(mean.model = list(armaOrder = c(0,0), 
+tgarchspec_sstd = ugarchspec(mean.model = list(armaOrder = c(0,0), 
                                                  include.mean = TRUE), 
                                variance.model = list(garchOrder = c(1,1), 
                                                      model = "fGARCH", submodel = "TGARCH"),
                                distribution.model = "sstd")
-tgarch11fit_sstd = ugarchfit(data = returns, spec = tgarch11spec_sstd, solver = "gosolnp",
+tgarchfit_sstd = ugarchfit(data = returns, spec = tgarchspec_sstd, solver = "gosolnp",
                              solver.control=list(trace = 1))
-tgarch11fit_sstd
+tgarchfit_sstd
 
 # Model validation
 par(mfrow = c(1,2))
-acf(tgarch11fit_sstd@fit$z, main = "ACF of the standardized residuals") # acf of the standardized residuals
-acf(tgarch11fit_sstd@fit$z,  main = "ACF of the squared standardized residuals") # acf of (standardized residuals)^2 
+acf(tgarchfit_sstd@fit$z, main = "ACF of the standardized residuals") # acf of the standardized residuals
+acf(tgarchfit_sstd@fit$z,  main = "ACF of the squared standardized residuals") # acf of (standardized residuals)^2 
+dev.off
 par(mfrow = c(1,2))
-plot(tgarch11fit_sstd, which = 9) # QQ plot of the standardized residuals
-plot(tgarch11fit_sstd, which = 8)
-
+plot(tgarchfit_sstd, which = 9) # QQ plot of the standardized residuals
+plot(tgarchfit_sstd, which = 8)
+dev.off
 #-------------------------------------------------------------------------------
 
 # Determining eGARCH for ged distribution using AIC
@@ -118,30 +120,31 @@ which(min(bic_tgarch_ged) == bic_tgarch_ged)
 
 par(mar=c(5, 5, 4, 5))
 plot(bic_tgarch_ged, col=heat.colors(n = 10, alpha = 0.9), digits = 4,
-     main = "BIC, TGARCH models with skewed student's t-distribution",
+     main = "BIC, TGARCH models with generalized error distribution",
      xlab = expression(paste("Column, ", italic("q"), " order")), 
      ylab = expression(paste("Row, ", italic("p"), " order")))
 dev.off
 
 
 # Model specification
-tgarch21spec_ged = ugarchspec(mean.model = list(armaOrder = c(0,0), 
+tgarchspec_ged = ugarchspec(mean.model = list(armaOrder = c(0,0), 
                                                 include.mean = TRUE), 
-                              variance.model = list(garchOrder = c(2,1), 
+                              variance.model = list(garchOrder = c(1,1), 
                                                     model = "fGARCH", submodel = "TGARCH"),
                               distribution.model = "ged")
-tgarch21fit_ged = ugarchfit(data = returns, spec = tgarch21spec_ged, solver = "gosolnp",
+tgarchfit_ged = ugarchfit(data = returns, spec = tgarchspec_ged, solver = "gosolnp",
                             solver.control=list(trace = 1))
-tgarch21fit_ged
+tgarchfit_ged
 
 # Model validation
 par(mfrow = c(1,2))
-acf(tgarch21fit_ged@fit$z, main = "ACF of the standardized residuals") # acf of the standardized residuals
-acf(tgarch21fit_ged@fit$z,  main = "ACF of the squared standardized residuals") # acf of (standardized residuals)^2 
+acf(tgarchfit_ged@fit$z, main = "ACF of the standardized residuals") # acf of the standardized residuals
+acf(tgarchfit_ged@fit$z,  main = "ACF of the squared standardized residuals") # acf of (standardized residuals)^2 
+dev.off
 par(mfrow = c(1,2))
-plot(tgarch21fit_ged, which = 9) # QQ plot of the standardized residuals
-plot(tgarch21fit_ged, which = 8)
-
+plot(tgarchfit_ged, which = 9) # QQ plot of the standardized residuals
+plot(tgarchfit_ged, which = 8)
+dev.off
 
 # Simulations
 # SSTD

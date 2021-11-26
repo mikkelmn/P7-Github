@@ -11,7 +11,7 @@ for (i in 1:5) {
       garch_fit = ugarchfit(spec=garch_spec, data=returns, 
                             solver = "gosolnp",
                             solver.control=list(trace = 1))
-      aic_garch_norm[i,j] = infocriteria(garch_fit)[1]
+      aic_garch_norm[i,j] = infocriteria(garch_fit)[2]
     }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
   }
 }
@@ -21,29 +21,31 @@ which(min(aic_garch_norm) == aic_garch_norm)
 
 par(mar=c(5, 5, 4, 5))
 plot(aic_garch_norm, col=heat.colors(n = 10, alpha = 0.9), digits = 4,
-     main = "AIC, GARCH models with Gaussian Distribution",
+     main = "BIC, GARCH models with Gaussian Distribution",
      xlab = expression(paste("Column, ", italic("q"), " order")), 
      ylab = expression(paste("Row, ", italic("p"), " order")))
 dev.off
 
 # Model specification
-garch22spec_norm = ugarchspec(mean.model = list(armaOrder = c(0,0), 
+garchspec_norm = ugarchspec(mean.model = list(armaOrder = c(0,0), 
                                                 include.mean = TRUE), 
-                              variance.model = list(garchOrder = c(2,2), 
+                              variance.model = list(garchOrder = c(1,1), 
                                                     model = "sGARCH"),
                               distribution.model = "norm")
-garch22fit_norm = ugarchfit(data = returns, spec = garch22spec_norm, solver = "gosolnp",
+garchfit_norm = ugarchfit(data = returns, spec = garchspec_norm, solver = "gosolnp",
                             solver.control=list(trace = 1))
-garch22fit_norm
+garchfit_norm
 
+plot(garch22fit_norm)
 # Model validation
 par(mfrow=c(1,2))
-acf(garch22fit_norm@fit$z, main = "ACF of the standardized residuals") # acf of the standardized residuals
-acf(garch22fit_norm@fit$z^2, main = "ACF of the squared standardized residuals") # acf of (standardized residuals)^2 
+acf(garchfit_norm@fit$z, main = "ACF of the standardized residuals") # acf of the standardized residuals
+acf(garchfit_norm@fit$z^2, main = "ACF of the squared standardized residuals") # acf of (standardized residuals)^2 
+dev.off
 par(mfrow=c(1,2))
-plot(garch22fit_norm, which = 9) # QQ plot of the standardized residuals
-plot(garch22fit_norm, which = 8)
-
+plot(garchfit_norm, which = 9) # QQ plot of the standardized residuals
+plot(garchfit_norm, which = 8)
+dev.off
 
 #-------------------------------------------------------------------------------
 
@@ -60,7 +62,7 @@ for (i in 1:5) {
       garch_fit = ugarchfit(spec=garch_spec, data=returns, 
                             solver = "gosolnp",
                             solver.control=list(trace = 1))
-      aic_garch_sstd[i,j] = infocriteria(garch_fit)[1]
+      aic_garch_sstd[i,j] = infocriteria(garch_fit)[2]
     }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
   }
 }
@@ -70,29 +72,31 @@ which(min(aic_garch_sstd) == aic_garch_sstd)
 
 par(mar=c(5, 5, 4, 5))
 plot(aic_garch_sstd, col=heat.colors(n = 10, alpha = 0.9), digits = 4,
-     main = "AIC, GARCH models with skewed student's t-distribution",
+     main = "BIC, GARCH models with skewed student's t-distribution",
      xlab = expression(paste("Column, ", italic("q"), " order")), 
      ylab = expression(paste("Row, ", italic("p"), " order")))
 dev.off
 
 
 # Model specification
-garch22spec_sstd = ugarchspec(mean.model = list(armaOrder = c(0,0), 
+garchspec_sstd = ugarchspec(mean.model = list(armaOrder = c(0,0), 
                                                 include.mean = TRUE), 
-                              variance.model = list(garchOrder = c(2,2), 
+                              variance.model = list(garchOrder = c(1,1), 
                                                     model = "sGARCH"),
                               distribution.model = "sstd")
-garch22fit_sstd = ugarchfit(data = returns, spec = garch22spec_sstd, solver = "gosolnp",
+garchfit_sstd = ugarchfit(data = returns, spec = garchspec_sstd, solver = "gosolnp",
                             solver.control=list(trace = 1))
-garch22fit_sstd
+garchfit_sstd
 
 # Model validation
 par(mfrow = c(1,2))
 acf(garch22fit_sstd@fit$z, main = "ACF of the standardized residuals") # acf of the standardized residuals
 acf(garch22fit_sstd@fit$z^2, main = "ACF of the squared standardized residuals") # acf of (standardized residuals)^2 
+dev.off
 par(mfrow = c(1,2))
 plot(garch22fit_sstd, which = 9) # QQ plot of the standardized residuals
 plot(garch22fit_sstd, which = 8)
+dev.off
 #-------------------------------------------------------------------------------
 
 # Determining sGARCH for ged distribution using AIC
@@ -108,7 +112,7 @@ for (i in 1:5) {
       garch_fit = ugarchfit(spec=garch_spec, data=returns, 
                             solver = "gosolnp",
                             solver.control=list(trace = 1))
-      aic_garch_ged[i,j] = infocriteria(garch_fit)[1]
+      aic_garch_ged[i,j] = infocriteria(garch_fit)[2]
     }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
   }
 }
@@ -118,30 +122,31 @@ which(min(aic_garch_ged) == aic_garch_ged)
 
 par(mar=c(5, 5, 4, 5))
 plot(aic_garch_ged, col=heat.colors(n = 10, alpha = 0.9), digits = 4,
-     main = "AIC, GARCH models with skewed student's t-distribution",
+     main = "BIC, GARCH models with generalized error distribution",
      xlab = expression(paste("Column, ", italic("q"), " order")), 
      ylab = expression(paste("Row, ", italic("p"), " order")))
 dev.off
 
 
 # Model specification
-garch22spec_ged = ugarchspec(mean.model = list(armaOrder = c(0,0), 
+garchspec_ged = ugarchspec(mean.model = list(armaOrder = c(0,0), 
                                                include.mean = TRUE), 
-                             variance.model = list(garchOrder = c(2,2), 
+                             variance.model = list(garchOrder = c(1,1), 
                                                    model = "sGARCH"),
                              distribution.model = "ged")
-garch22fit_ged = ugarchfit(data = returns, spec = garch22spec_ged, solver = "gosolnp",
+garchfit_ged = ugarchfit(data = returns, spec = garchspec_ged, solver = "gosolnp",
                            solver.control=list(trace = 1))
-garch22fit_ged
+garchfit_ged
 
 # Model validation
 par(mfrow = c(1,2))
-acf(garch22fit_ged@fit$z, main = "ACF of the standardized residuals") # acf of the standardized residuals
-acf(garch22fit_ged@fit$z^2,  main = "ACF of the squared standardized residuals") # acf of (standardized residuals)^2 
+acf(garchfit_ged@fit$z, main = "ACF of the standardized residuals") # acf of the standardized residuals
+acf(garchfit_ged@fit$z^2,  main = "ACF of the squared standardized residuals") # acf of (standardized residuals)^2 
+dev.off
 par(mfrow = c(1,2))
-plot(garch22fit_ged, which = 9) # QQ plot of the standardized residuals
-plot(garch22fit_ged, which = 8)
-
+plot(garchfit_ged, which = 9) # QQ plot of the standardized residuals
+plot(garchfit_ged, which = 8)
+dev.off
 # --------------------------------------------------------------------------
 # Leverage effect
 ccf_norm = ccf(garch22fit_norm@fit$sigma, as.ts(returns))
