@@ -40,9 +40,11 @@ egarch33fit_norm
 par(mfrow = c(1,2))
 acf(egarch33fit_norm@fit$z, main = "ACF of the standardized residuals") # acf of the standardized residuals
 acf(egarch33fit_norm@fit$z,  main = "ACF of the squared standardized residuals") # acf of (standardized residuals)^2 
+dev.off
 par(mfrow = c(1,2))
 plot(egarch33fit_norm, which = 9) # QQ plot of the standardized residuals
 plot(egarch33fit_norm, which = 8)
+dev.off
 
 #-------------------------------------------------------------------------------
 
@@ -89,9 +91,11 @@ egarchfit_sstd
 par(mfrow = c(1,2))
 acf(egarchfit_sstd@fit$z, main = "ACF of the standardized residuals") # acf of the standardized residuals
 acf(egarchfit_sstd@fit$z,  main = "ACF of the squared standardized residuals") # acf of (standardized residuals)^2 
+dev.off
 par(mfrow = c(1,2))
 plot(egarchfit_sstd, which = 9) # QQ plot of the standardized residuals
 plot(egarchfit_sstd, which = 8)
+dev.off
 
 #-------------------------------------------------------------------------------
 
@@ -138,9 +142,11 @@ egarchfit_ged
 par(mfrow = c(1,2))
 acf(egarchfit_ged@fit$z, main = "ACF of the standardized residuals") # acf of the standardized residuals
 acf(egarchfit_ged@fit$z,  main = "ACF of the squared standardized residuals") # acf of (standardized residuals)^2 
+dev.off
 par(mfrow = c(1,2))
 plot(egarchfit_ged, which = 9) # QQ plot of the standardized residuals
 plot(egarchfit_ged, which = 8)
+dev.off
 
 #------------------------------------------------------------------------------
 # Simulations
