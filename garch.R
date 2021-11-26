@@ -36,7 +36,8 @@ garchfit_norm = ugarchfit(data = returns, spec = garchspec_norm, solver = "gosol
                             solver.control=list(trace = 1))
 garchfit_norm
 
-plot(garch22fit_norm)
+ts.plot(garchfit_norm@fit$z)
+
 # Model validation
 par(mfrow=c(1,2))
 acf(garchfit_norm@fit$z, main = "ACF of the standardized residuals") # acf of the standardized residuals
