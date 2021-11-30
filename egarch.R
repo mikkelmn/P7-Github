@@ -29,7 +29,7 @@ dev.off
 # Model specification
 egarch33spec_norm = ugarchspec(mean.model = list(armaOrder = c(0,0), 
                                                 include.mean = TRUE), 
-                              variance.model = list(garchOrder = c(1,1), 
+                              variance.model = list(garchOrder = c(3,3), 
                                                     model = "eGARCH"),
                               distribution.model = "norm")
 egarch33fit_norm = ugarchfit(data = returns, spec = egarch33spec_norm, solver = "gosolnp",
@@ -80,13 +80,13 @@ dev.off
 # Model specification
 egarchspec_sstd = ugarchspec(mean.model = list(armaOrder = c(0,0), 
                                                 include.mean = TRUE), 
-                              variance.model = list(garchOrder = c(1,1), 
+                              variance.model = list(garchOrder = c(3,3), 
                                                     model = "eGARCH"),
                               distribution.model = "sstd")
 egarchfit_sstd = ugarchfit(data = returns, spec = egarchspec_sstd, solver = "gosolnp",
                             solver.control=list(trace = 1))
 egarchfit_sstd
-
+plot.ts(egarchfit_sstd@fit$z)
 # Model validation
 par(mfrow = c(1,2))
 acf(egarchfit_sstd@fit$z, main = "ACF of the standardized residuals") # acf of the standardized residuals

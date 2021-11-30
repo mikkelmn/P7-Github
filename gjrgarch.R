@@ -138,7 +138,7 @@ gjrgarchspec_ged = ugarchspec(mean.model = list(armaOrder = c(0,0),
 gjrgarchfit_ged = ugarchfit(data = returns, spec = gjrgarchspec_ged, solver = "gosolnp",
                             solver.control=list(trace = 1))
 gjrgarchfit_ged
-
+plot.ts(gjrgarchfit_ged@fit$z)
 # Model validation
 par(mfrow = c(1,2))
 acf(gjrgarchfit_ged@fit$z, main = "ACF of the standardized residuals") # acf of the standardized residuals
