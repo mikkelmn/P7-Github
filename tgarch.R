@@ -35,6 +35,7 @@ tgarchspec_norm = ugarchspec(mean.model = list(armaOrder = c(0,0),
 tgarchfit_norm = ugarchfit(data = returns, spec = tgarchspec_norm, solver = "gosolnp",
                              solver.control=list(trace = 1))
 tgarchfit_norm
+plot(tgarchfit_norm)
 
 # Model validation
 par(mfrow = c(1,2))
@@ -47,7 +48,7 @@ plot(tgarchfit_norm, which = 8)
 dev.off
 #-------------------------------------------------------------------------------
 
-# Determining tGARCH for sstd distribution using AIC
+# Determining tGARCH for sstd distribution using BIC
 bic_tgarch_sstd = matrix(0,5,5)
 for (i in 1:5) {
   for (j in 1:5) {
@@ -86,6 +87,7 @@ tgarchfit_sstd = ugarchfit(data = returns, spec = tgarchspec_sstd, solver = "gos
                              solver.control=list(trace = 1))
 tgarchfit_sstd
 
+plot(tgarchfit_sstd)
 # Model validation
 par(mfrow = c(1,2))
 acf(tgarchfit_sstd@fit$z, main = "ACF of the standardized residuals") # acf of the standardized residuals
@@ -97,7 +99,7 @@ plot(tgarchfit_sstd, which = 8)
 dev.off
 #-------------------------------------------------------------------------------
 
-# Determining eGARCH for ged distribution using AIC
+# Determining eGARCH for ged distribution using BIC
 bic_tgarch_ged = matrix(0,5,5)
 for (i in 1:5) {
   for (j in 1:5) {
