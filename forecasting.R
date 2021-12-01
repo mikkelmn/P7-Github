@@ -48,9 +48,17 @@ foremod = ugarchforecast(fitORspec = garchfitfore, n.ahead = length(test21),
                          n.roll = length(test21))
 predval = foremod@forecast$sigmaFor[1,]
 
-plot(foremod, which = "all")
+plot(garchfitfore, which = 3)
 plot.ts(foremod@model$modeldata$sigma)
+
+plot(foremod, which = 4)
+
 plot.ts(predval)
+
+ggplot(data = df) + 
+  geom_line(aes(x = Index, y = abs(test21)), col = "cadetblue4", alpha = 0.4) +
+  geom_line(aes(x = Index, y = predval[-1]), col = "tomato", alpha = 2, size = 0.6) +
+  labs(x = "Date", y = "Sigma") + ylim(0,0.03)
 
 # rolling forecast of VIX returns ----------------
 
