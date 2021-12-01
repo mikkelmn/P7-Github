@@ -35,6 +35,7 @@ tgarchspec_norm = ugarchspec(mean.model = list(armaOrder = c(0,0),
 tgarchfit_norm = ugarchfit(data = returns, spec = tgarchspec_norm, solver = "gosolnp",
                              solver.control=list(trace = 1))
 tgarchfit_norm
+plot(tgarchfit_norm)
 
 # Model validation
 par(mfrow = c(1,2))
@@ -85,7 +86,8 @@ tgarchspec_sstd = ugarchspec(mean.model = list(armaOrder = c(0,0),
 tgarchfit_sstd = ugarchfit(data = returns, spec = tgarchspec_sstd, solver = "gosolnp",
                              solver.control=list(trace = 1))
 tgarchfit_sstd
-plot.ts(tgarchfit_sstd@fit$z)
+
+plot(tgarchfit_sstd)
 # Model validation
 par(mfrow = c(1,2))
 acf(tgarchfit_sstd@fit$z, main = "ACF of the standardized residuals") # acf of the standardized residuals

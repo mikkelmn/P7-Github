@@ -100,7 +100,7 @@ dev.off
 
 #-------------------------------------------------------------------------------
 
-# Determining GJR-GARCH for ged distribution using AIC
+# Determining GJR-GARCH for ged distribution using BIC-----
 bic_gjrgarch_ged = matrix(0,5,5)
 for (i in 1:5) {
   for (j in 1:5) {
@@ -129,7 +129,7 @@ plot(bic_gjrgarch_ged, col=heat.colors(n = 10, alpha = 0.9), digits = 4,
 dev.off
 
 
-# Model specification
+# Model specification-------
 gjrgarchspec_ged = ugarchspec(mean.model = list(armaOrder = c(0,0), 
                                                 include.mean = TRUE), 
                               variance.model = list(garchOrder = c(1,1), 
