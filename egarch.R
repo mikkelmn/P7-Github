@@ -164,3 +164,4 @@ mean(t(kurt))
 sim = ugarchsim(fit = egarch33fit_ged, n.sim = length(returns), n.start = 0, m.sim = 1000, rseed = NA)
 kurt = kurtosis(sim@simulation$seriesSim)
 mean(t(kurt))
+
