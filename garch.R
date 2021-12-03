@@ -21,10 +21,15 @@ which(min(aic_garch_norm) == aic_garch_norm)
 
 par(mar=c(5, 5, 4, 5))
 plot(aic_garch_norm, col=heat.colors(n = 10, alpha = 0.9), digits = 4,
-     main = "BIC, GARCH models with Gaussian Distribution",
+     main = "BIC, GARCH, N(0,1)",
      xlab = expression(paste("Column, ", italic("q"), " order")), 
      ylab = expression(paste("Row, ", italic("p"), " order")))
 dev.off
+
+layout(matrix(c(0,1,1,1,1,1,1,1,1,1,1,0,2,2,2,2,2,2,2,2,2,2,0,
+                0,3,3,3,3,3,3,3,3,3,3,0,4,4,4,4,4,4,4,4,4,4,0,
+                0,5,5,5,5,5,5,5,5,5,5,0,6,6,6,6,6,6,6,6,6,6,0,
+                0,7,7,7,7,7,7,7,7,7,7,0,8,8,8,8,8,8,8,8,8,8,0), nrow=4, byrow = TRUE))
 
 # Model specification
 garchspec_norm = ugarchspec(mean.model = list(armaOrder = c(0,0), 
@@ -73,7 +78,7 @@ which(min(aic_garch_sstd) == aic_garch_sstd)
 
 par(mar=c(5, 5, 4, 5))
 plot(aic_garch_sstd, col=heat.colors(n = 10, alpha = 0.9), digits = 4,
-     main = "BIC, GARCH models with skewed student's t-distribution",
+     main = "BIC, GARCH, SSTD(0,1)",
      xlab = expression(paste("Column, ", italic("q"), " order")), 
      ylab = expression(paste("Row, ", italic("p"), " order")))
 dev.off
