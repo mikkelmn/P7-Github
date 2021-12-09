@@ -21,7 +21,7 @@ which(min(bic_gjrgarch_norm) == bic_gjrgarch_norm)
 
 par(mar=c(5, 5, 4, 5))
 plot(bic_gjrgarch_norm, col=heat.colors(n = 10, alpha = 0.9), digits = 4,
-     main = "BIC, GJR-GARCH models with Gaussian Distribution",
+     main = "BIC, GJR-GARCH, N(0,1)",
      xlab = expression(paste("Column, ", italic("q"), " order")), 
      ylab = expression(paste("Row, ", italic("p"), " order")))
 dev.off
@@ -71,7 +71,7 @@ which(min(bic_gjrgarch_sstd) == bic_gjrgarch_sstd)
 
 par(mar=c(5, 5, 4, 5))
 plot(bic_gjrgarch_sstd, col=heat.colors(n = 10, alpha = 0.9), digits = 4,
-     main = "BIC, GJR-GARCH models with SSTD",
+     main = "BIC, GJR-GARCH, SSTD(0,1)",
      xlab = expression(paste("Column, ", italic("q"), " order")), 
      ylab = expression(paste("Row, ", italic("p"), " order")))
 dev.off

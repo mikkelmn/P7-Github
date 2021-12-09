@@ -1,8 +1,24 @@
+# packages ----------------
 library(tidyverse)
+library(quantmod)
 library(rugarch)
 library(xts)
+library(timetk)
+library(forecast)
 
-# rolling forecast
+# data -------------------
+getSymbols("^VIX", src = "yahoo", from = "1990-01-01", to = "2021-10-31")
+VIX = VIX$VIX.Close[-1]
+getSymbols("^GSPC", src = "yahoo", from = "1990-01-01", to = "2021-10-31")
+returns = diff(log(GSPC$GSPC.Close))[-1]
+SP500_Volume = GSPC$GSPC.Volume[-1]
+getSymbols("DGS3MO", src = "FRED")
+TBill3m = DGS3MO["1990-01-01/2021-10-31"] #no [-1], it is already na
+getSymbols("TB3MS", src = "FRED")
+plot(TB3MS["1990-01-01/2021-10-31"])
+plot(DGS3MO)
+
+# rolling forecast ---------------
 
 train = returns["/2020-12-31"]
 test = returns["2021-01-01/2021-10-31"]
@@ -22,32 +38,133 @@ ggplot(data = pred) + labs(x = "Date") +
 
 plot(garchroll, which = 2)
 
-# forecast roll and static
+# rolling forecast of the S&P500 returns ----------------
+
 test10y = returns["2011-11-01/2021-10-31"]
-specs = ugarchspec(variance.model = list(garchOrder=c(1,1), model = "sGARCH"), 
+test21 = returns["2021-01-01/2021-10-31"]
+specs = ugarchspec(variance.model = list(garchOrder=c(1,1), model = "sGARCH"),
                        mean.model = list(armaOrder=c(0,0), include.mean = T),
                        distribution.model = "norm")
 garchfitfore = ugarchfit(data = returns, spec = specs, 
-                         out.sample = length(test10y))
-foremod = ugarchforecast(fitORspec = garchfitfore, data = returns, 
-                         n.ahead = 10, n.roll = length(test10y), 
-                         external.forecasts = list())
+                         out.sample = length(test21))
+foremod = ugarchforecast(fitORspec = garchfitfore, n.ahead = length(test21), 
+                         n.roll = length(test21))
+predval = foremod@forecast$sigmaFor[1,]
+
+plot(garchfitfore, which = 3)
+plot.ts(foremod@model$modeldata$sigma)
+
 plot(foremod, which = 4)
 
-plot.ts(foremod@model$modeldata$sigma)
-plot.ts(foremod@forecast$sigmaFor[1,])
+plot.ts(predval)
 
+ggplot(data = df) + 
+  geom_line(aes(x = Index, y = abs(test21)), col = "cadetblue4", alpha = 0.4) +
+  geom_line(aes(x = Index, y = predval[-1]), col = "tomato", alpha = 2, size = 0.6) +
+  labs(x = "Date", y = "Sigma") + ylim(0,0.03)
+
+# rolling forecast of VIX returns ----------------
+
+VIXreturns = diff(log(VIX))
+plot(VIXreturns)
+specs = ugarchspec(variance.model = list(garchOrder=c(1,1), model = "sGARCH"), 
+                   mean.model = list(armaOrder=c(0,0), include.mean = T),
+                   distribution.model = "norm")
+fit_VIXreturns = ugarchfit(data = VIXreturns[-1], spec = specs, 
+                         out.sample = length(test21))
+fc_VIXreturns = ugarchforecast(fitORspec = fit_VIXreturns, data = VIXreturns[-1], 
+                         n.ahead = 10, n.roll = length(test21))
+predval_VIXreturns = fc_VIXreturns@forecast$sigmaFor[1,]
+plot(fc_VIXreturns, which = 4)
+plot.ts(sigma(fit_VIXreturns))
+
+# forecast VIX using volatility of forecasted returns ---------------
 lm(VIX["/2011-10-31"] ~ sigma(garchfitfore))
 plot.ts(VIX["2011-11-01/2021-10-31"], ylim = c(5,90))
 lines(6.212 + 1365.612 * foremod@forecast$sigmaFor[1,], col = "steelblue")
 
-predval = foremod@forecast$sigmaFor[1,]
-tib = tibble(fortify.zoo(VIX))
-tib = tib %>% filter(Index >= "2011-11-01") %>% 
+tib = tibble(fortify.zoo(VIX)) %>% 
+  rename(VIX = VIX.Close)
+df = tib %>% filter(Index >= "2011-11-01") %>% 
     mutate(RollForecast = 6.212 + 1365.612 * predval[-1])
 
-ggplot(data = tib) + geom_line(aes(x = Index, y = VIX.Close, col = "Actual VIX")) +
+ggplot(data = df) + geom_line(aes(x = Index, y = VIX, col = "Actual VIX")) +
   geom_line(aes(x = Index, y = RollForecast, col = "Rolling Forecast")) +
   labs(x = "Date", y = "Value")
+(MSE1 = mean((df$VIX - df$RollForecast)^2))
+
+# determining AR(p) of VIX -----------------
+
+auto.arima(VIX["/2021-01-01"], max.q = 0)
+acf(VIX["/2011-10-31"])
+pacf(VIX["/2011-10-31"])
+acf(diff(VIX["/2011-10-31"]), na.action = na.pass)
+pacf(diff(VIX["/2011-10-31"]), na.action = na.pass)
+
+# forecast VIX using volatility of returns and lags of VIX -----------
+
+tib = tibble(fortify.zoo(VIX)) %>% 
+  left_join(x = ., y = fortify.zoo(sigma(garchfitfore)), by = "Index") %>% 
+  left_join(x = ., y = fortify.zoo(SP500_Volume), by = "Index") %>% 
+  left_join(x = ., y = fortify.zoo(TBill3m), by = "Index") %>%
+  dplyr::rename(
+    VIX = VIX.Close,
+    SigmaReturns = "sigma(garchfitfore)",
+    TradingVolume = GSPC.Volume,
+    RiskFreeRate = DGS3MO
+    ) %>% 
+  timetk::tk_augment_lags(.value = c(TradingVolume, RiskFreeRate), .lags = 1) %>% 
+  timetk::tk_augment_lags(.value = VIX, .lags = c(1:5), .names = "auto") %>% 
+  dplyr::filter(Index > "1990-01-10")
+
+mod = lm(VIX ~ SigmaReturns + RiskFreeRate_lag1 
+         + VIX_lag1 + VIX_lag2 + VIX_lag3 + VIX_lag4 + VIX_lag5, 
+         data = tib %>% filter(Index <= "2021-01-01"))
+summary(mod)
+
+df = tib %>% filter(Index >= "2021-01-01") %>% 
+  mutate(RollForecast = coef(mod)[1] + coef(mod)[2] * predval[-1] 
+         + coef(mod)[3] * RiskFreeRate_lag1
+         + coef(mod)[4] * VIX_lag1 + coef(mod)[5] * VIX_lag2 
+         + coef(mod)[6] * VIX_lag3 + coef(mod)[7] * VIX_lag4
+         + coef(mod)[8] * VIX_lag5)
+
+ggplot(data = df) + geom_line(aes(x = Index, y = VIX, col = "Actual VIX")) +
+  geom_line(aes(x = Index, y = RollForecast, col = "Rolling Forecast")) +
+  labs(x = "Date", y = "Value")
+MSE_OutOfSample[1] = mean((df$VIX - df$RollForecast)^2)
+
+# in sample
+tib = tib %>% filter(Index <= "2021-01-01")
+ggplot(data = tib) + geom_line(aes(x = Index, y = VIX, col = "Actual VIX")) +
+  geom_line(aes(x = Index, y = fitted(mod), col = "Fitted Values")) +
+  labs(x = "Date", y = "Value")
+MSE_InSample_withlags[1] = mean((tib$VIX - fitted(mod))^2)
+
+options(pillar.sigfig = 5) %>% 
+  tibble(ModelName,MSE_InSample,MSE_OutOfSample,
+         MSE_InSample_withlags,MSE_OutOfSample_withlags) %>% View(.)
+
+ModelName = c("GARCH normal", "GARCH skewed T", 
+              "E-GARCH normal", "E-GARCH skewed T", 
+              "T-GARCH normal", "T-GARCH skewed T", 
+              "GJR-GARCH normal", "GJR-GARCH skewed T", 
+              "Without Sigma", "Only Lags")
+
+MSE_tib = tibble(ModelName,MSE_InSample,MSE_OutOfSample,
+                 MSE_InSample_withlags,MSE_OutOfSample_withlags)
+
+library(kableExtra)
+
+MSE_tib %>%
+  kbl(caption="MSE of the models both in sample and out of sample",
+      format= "latex",
+      col.names = c("Model Names","MSE in sample","MSE out of sample","MSE in sample with lags",
+                    "MSE out of sample with lags"),
+      align="r") %>%
+  kable_material(c("striped", "hover"), )
+
+
+
 
 

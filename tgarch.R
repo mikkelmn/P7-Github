@@ -21,7 +21,7 @@ which(min(bic_tgarch_norm) == bic_tgarch_norm)
 
 par(mar=c(5, 5, 4, 5))
 plot(bic_tgarch_norm, col=heat.colors(n = 10, alpha = 0.9), digits = 4,
-     main = "BIC, TGARCH models with Gaussian Distribution",
+     main = "BIC, TGARCH, N(0,1)",
      xlab = expression(paste("Column, ", italic("q"), " order")), 
      ylab = expression(paste("Row, ", italic("p"), " order")))
 dev.off
@@ -71,7 +71,7 @@ which(min(bic_tgarch_sstd) == bic_tgarch_sstd)
 
 par(mar=c(5, 5, 4, 5))
 plot(bic_tgarch_sstd, col=heat.colors(n = 10, alpha = 0.9), digits = 4,
-     main = "BIC, TGARCH models with skewed student's t-distribution",
+     main = "BIC, TGARCH, SSTD(0,1)",
      xlab = expression(paste("Column, ", italic("q"), " order")), 
      ylab = expression(paste("Row, ", italic("p"), " order")))
 dev.off

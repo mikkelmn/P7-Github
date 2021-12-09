@@ -12,16 +12,17 @@ library(tidyverse)
 #                   quote = "Close", end = "2021-10-15")
 getSymbols("^VIX", src = "yahoo", from = "1990-01-01", to = "2020-12-31")
 VIX = VIX$VIX.Close[-1]
-plot(VIX)
+plot(VIX, main = "CBOE VIX", format.labels="%b\n%Y")
 
 #SP = get.hist.quote(instrument = "^GSPC",provider = "yahoo",
 #                  quote = "Close", end = "2021-10-15")
 #returns=diff(log(SP))
-getSymbols("^GSPC", src = "yahoo", from = "1990-01-01", to = "2020-12-31")
+getSymbols("^GSPC", src = "yahoo", from = "1990-01-01", to = "2021-11-30")
 par(mfrow=c(2,1))
-plot(GSPC$GSPC.Close, main = "S&P 500 index")
+plot(GSPC$GSPC.Close, main = "S&P 500 index", format.labels="%b\n%Y")
 returns = diff(log(GSPC$GSPC.Close))[-1]
-plot(returns, main = "Returns of the S&P 500")
+plot(returns, main = "Returns of the S&P 500", format.labels="%b\n%Y")
+
 
 hist(returns, breaks = 100, xlim = c(-0.1,0.1), col = "lightblue", 
      border = "blue3", freq = F, xlab = "S&P 500 returns", 
@@ -191,6 +192,8 @@ min(aic_garch_ged)
 min(bic_garch_norm)
 min(bic_garch_t)
 min(bic_garch_ged)
+
+getSymbols("DTB3", src = "FRED", from = "1990-01-01", to = "2021-11-30")
 
 # fitting GARCH models -----------------------------------------
 
@@ -381,3 +384,4 @@ lines(5.86+1379.83*foremod@forecast$sigmaFor[1,], col = "red")
 #-------------------------------------------------------------------------------
 #----------------- The actual procedure (sGARCH) ----------------------------------------
 #-------------------------------------------------------------------------------
+
