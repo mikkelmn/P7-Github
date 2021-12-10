@@ -13,7 +13,10 @@ getSymbols("^GSPC", src = "yahoo", from = "1990-01-01", to = "2021-10-31")
 returns = diff(log(GSPC$GSPC.Close))[-1]
 SP500_Volume = GSPC$GSPC.Volume[-1]
 getSymbols("DGS3MO", src = "FRED")
-TBill3m = na.approx(DGS3MO["1990-01-01/2021-10-31"]) #no [-1], it is already na
+TBill3m = DGS3MO["1990-01-01/2021-10-31"] #no [-1], it is already na
+getSymbols("TB3MS", src = "FRED")
+plot(TB3MS["1990-01-01/2021-10-31"])
+plot(DGS3MO)
 
 kurtosis(VIX)
 hist(VIX)

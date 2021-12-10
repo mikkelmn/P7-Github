@@ -1,24 +1,33 @@
 library(tseries)
 
 VIX = get.hist.quote('^GSPC', provider = 'yahoo', end = "2021-10-06")
-plot(VIX$Close, main="S&P 500 ", xlab = "Date", ylab = "Price")
+autoplot(VIX$Close, main="S&P 500 index") + ylab("Price") + xlab("") 
 
 VIX.return = diff(log(VIX$Close))
 
-plot(VIX.return, main = "S&P 500 returns",xlab = "Date", ylab = "Return")
+autoplot(VIX.return, main = "S&P 500 returns") + xlab("") + ylab("Return")
 
-acf(VIX.return, na.action = na.exclude, main = "ACF of S&P 500 returns")
-pacf(VIX.return, na.action = na.exclude, main = "ACF of S&P 500 returns")
+autoplot(acf(VIX.return, na.action = na.exclude), main = "ACF of S&P 500 returns")
+autoplot(pacf(VIX.return, na.action = na.exclude),main = "ACF of S&P 500 returns")
+auto.arima(VIX.return)
 
-layout(matrix(c(1,2), nr=2, byrow=T))
-acf(abs(VIX.return), na.action = na.exclude, main = "ACF of absolute S&P 500 returns")
-acf(VIX.return^2, na.action = na.exclude, main = "ACF of squared S&P 500 returns")
+autoplot(acf(abs(VIX.return), na.action = na.exclude), main = "ACF of absolute S&P 500 returns") +
+autoplot(acf(VIX.return^2, na.action = na.exclude), main = "ACF of squared S&P 500 returns")
 
 m <- mean(VIX.return)
 s <- sd(VIX.return)
-hist(VIX.return, prob=TRUE, breaks=200, col="light blue", xlab = "S&P 500 returns", main = "Histogram of S&P 500 returns",
-     xlim = c(-0.1, 0.1))
+autoplot(hist(VIX.return, prob=TRUE, breaks=200, col="gray", xlab = "S&P 500 returns", main = "Histogram of S&P 500 returns",
+     xlim = c(-0.1, 0.1)))
 curve(dnorm(x, mean = m, sd = s), add = TRUE, lwd = 2, col = "red")
+
+ggplot(VIX.return, aes(x=VIX.return)) + 
+  geom_histogram(binwidth=0.002, aes(y=..density..), color="black", fill="gray")+
+  stat_function(fun = dnorm, args = list(mean = m, sd = s), color = "blue")
+
+ggplot(VIX.return, aes(x=VIX.return)) + 
+  geom_histogram(binwidth=0.002, aes(y=..density..), color="black", fill="gray")+
+  stat_function(fun = dnorm, args = list(mean = m, sd = s), color = "blue")+
+  coord_cartesian(xlim =c(-0.1, 0), ylim = c(0, 10))
 
 
 hist(VIX.return, prob=TRUE, breaks=200, col="light blue", xlab = "S&P 500 returns", main = "Histogram of S&P 500 returns", 
