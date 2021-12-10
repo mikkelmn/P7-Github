@@ -26,22 +26,18 @@ plot(aic_garch_norm, col=heat.colors(n = 10, alpha = 0.9), digits = 4,
      ylab = expression(paste("Row, ", italic("p"), " order")))
 dev.off
 
-layout(matrix(c(0,1,1,1,1,1,1,1,1,1,1,0,2,2,2,2,2,2,2,2,2,2,0,
-                0,3,3,3,3,3,3,3,3,3,3,0,4,4,4,4,4,4,4,4,4,4,0,
-                0,5,5,5,5,5,5,5,5,5,5,0,6,6,6,6,6,6,6,6,6,6,0,
-                0,7,7,7,7,7,7,7,7,7,7,0,8,8,8,8,8,8,8,8,8,8,0), nrow=4, byrow = TRUE))
 
 # Model specification
 garchspec_norm = ugarchspec(mean.model = list(armaOrder = c(0,0), 
                                                 include.mean = TRUE), 
                               variance.model = list(garchOrder = c(1,1), 
                                                     model = "sGARCH"),
-                              distribution.model = "norm")
+                              distribution.model = "nig")
 garchfit_norm = ugarchfit(data = returns, spec = garchspec_norm, solver = "gosolnp",
                             solver.control=list(trace = 1))
 garchfit_norm
 
-ts.plot(garchfit_norm@fit$z)
+plot(garchfit_norm)
 
 # Model validation
 par(mfrow=c(1,2))
@@ -89,10 +85,16 @@ garchspec_sstd = ugarchspec(mean.model = list(armaOrder = c(0,0),
                                                 include.mean = TRUE), 
                               variance.model = list(garchOrder = c(1,1), 
                                                     model = "sGARCH"),
-                              distribution.model = "sstd")
+                              distribution.model = "norm")
 garchfit_sstd = ugarchfit(data = returns, spec = garchspec_sstd, solver = "gosolnp",
                             solver.control=list(trace = 1))
 garchfit_sstd
+
+
+garchfit_sstd
+
+Weighted.Box.test((garchfit_sstd@fit$z)^2, lag = 1, type = "Ljung-Box", fitdf = 0)
+
 
 # Model validation
 par(mfrow = c(1,2))

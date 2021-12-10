@@ -15,6 +15,11 @@ SP500_Volume = GSPC$GSPC.Volume[-1]
 getSymbols("DGS3MO", src = "FRED")
 TBill3m = na.approx(DGS3MO["1990-01-01/2021-10-31"]) #no [-1], it is already na
 
+kurtosis(VIX)
+hist(VIX)
+sd(VIX)
+mean(VIX)
+
 # rolling forecast ---------------
 
 train = returns["/2020-12-31"]
@@ -92,11 +97,11 @@ ggplot(data = df) + geom_line(aes(x = Index, y = VIX, col = "Actual VIX")) +
 
 # determining AR(p) of VIX -----------------
 
-auto.arima(VIX["/2021-01-01"], max.q = 0)
+auto.arima(VIX["/2020-12-31"], max.q = 0)
 acf(VIX["/2011-10-31"])
 pacf(VIX["/2011-10-31"])
-acf(diff(VIX["/2011-10-31"]), na.action = na.pass)
-pacf(diff(VIX["/2011-10-31"]), na.action = na.pass)
+acf(diff(VIX["/2020-12-31"]), na.action = na.pass)
+pacf(diff(VIX["/2020-12-31"]), na.action = na.pass)
 
 # forecast VIX using volatility of returns and lags of VIX -----------
 

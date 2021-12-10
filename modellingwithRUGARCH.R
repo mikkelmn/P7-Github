@@ -7,6 +7,7 @@ library(plot.matrix)
 library(tictoc)
 library(furrr)
 library(tidyverse)
+library(patchwork)
 
 #VIX = get.hist.quote(instrument = "^VIX",provider = "yahoo",
 #                   quote = "Close", end = "2021-10-15")
@@ -21,7 +22,10 @@ getSymbols("^GSPC", src = "yahoo", from = "1990-01-01", to = "2021-11-30")
 par(mfrow=c(2,1))
 plot(GSPC$GSPC.Close, main = "S&P 500 index", format.labels="%b\n%Y")
 returns = diff(log(GSPC$GSPC.Close))[-1]
-plot(returns, main = "Returns of the S&P 500", format.labels="%b\n%Y")
+(autoplot(GSPC$GSPC.Close, main = "S&P 500 index") + xlab("") + ylab("Price")) /
+  (autoplot(returns, main = "Returns of the S&P 500 index") +  xlab("") + ylab("Return"))
+
+
 
 
 hist(returns, breaks = 100, xlim = c(-0.1,0.1), col = "lightblue", 
@@ -382,6 +386,36 @@ lines(5.86+1379.83*foremod@forecast$sigmaFor[1,], col = "red")
 
 
 #-------------------------------------------------------------------------------
-#----------------- The actual procedure (sGARCH) ----------------------------------------
+#----------------- Misc plots---------- ----------------------------------------
 #-------------------------------------------------------------------------------
+vix1 = data.frame(VIX)
+vix = vix1 %>% transmute(garchfit_sstd@fit$sigma)
+sigma1 = as.xts(vix)
 
+vix2 = data.frame(VIX)
+vix = vix2 %>% transmute(egarchfit_sstd@fit$sigma)
+sigma2 = as.xts(vix)
+
+vix3 = data.frame(VIX)
+vix = vix3 %>% transmute(tgarchfit_sstd@fit$sigma)
+sigma3 = as.xts(vix)
+
+vix4 = data.frame(VIX)
+vix = vix4 %>% transmute(gjrgarchfit_sstd@fit$sigma)
+sigma4 = as.xts(vix)
+
+# 2x2 plot
+((autoplot(sigma1, main = "GARCH, SSTD(0,1)")+ ylim(0.003,0.075) + ylab(expression(sigma[t])) + xlab("")) + 
+  (autoplot(sigma2, main = "EGARCH, SSTD(0,1)")+ ylim(0.003,0.075) + ylab(expression(sigma[t])) + xlab(""))) /
+  ((autoplot(sigma3, main = "TGARCH, SSTD(0,1)")+ ylim(0.003,0.075) + ylab(expression(sigma[t])) + xlab("")) + 
+   (autoplot(sigma4, main = "GJR-GARCH, SSTD(0,1)")+ ylim(0.003,0.075) + ylab(expression(sigma[t])) + xlab("")))
+
+# 4x1 plot
+(autoplot(sigma1, main = "GARCH, SSTD(0,1)")+ ylim(0.003,0.075) + ylab(expression(sigma[t])) + xlab("")) / 
+    (autoplot(sigma2, main = "EGARCH, SSTD(0,1)")+ ylim(0.003,0.075) + ylab(expression(sigma[t])) + xlab("")) /
+  (autoplot(sigma3, main = "TGARCH, SSTD(0,1)")+ ylim(0.003,0.075) + ylab(expression(sigma[t])) + xlab("")) /
+     (autoplot(sigma4, main = "GJR-GARCH, SSTD(0,1)")+ ylim(0.003,0.075) + ylab(expression(sigma[t])) + xlab(""))
+
+autoplot(VIX, main = "CBOE VIX") + ylab("") + xlab("")
+
+autoplot(garchfit_sstd@fit$sigma)
