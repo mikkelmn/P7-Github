@@ -22,12 +22,14 @@ curve(dnorm(x, mean = m, sd = s), add = TRUE, lwd = 2, col = "red")
 
 ggplot(VIX.return, aes(x=VIX.return)) + 
   geom_histogram(binwidth=0.002, aes(y=..density..), color="black", fill="gray")+
-  stat_function(fun = dnorm, args = list(mean = m, sd = s), color = "blue")
+  stat_function(fun = dnorm, args = list(mean = m, sd = s), color = "red")+
+  xlab("S&P 500 returns") + ylab("Density")
 
 ggplot(VIX.return, aes(x=VIX.return)) + 
-  geom_histogram(binwidth=0.002, aes(y=..density..), color="black", fill="gray")+
-  stat_function(fun = dnorm, args = list(mean = m, sd = s), color = "blue")+
-  coord_cartesian(xlim =c(-0.1, 0), ylim = c(0, 10))
+  geom_histogram(binwidth=0.002, aes(y=..density..), color="black", fill="gray") +
+  stat_function(fun = dnorm, args = list(mean = m, sd = s), color = "red") +
+  coord_cartesian(xlim =c(-0.1, 0), ylim = c(0, 10)) +
+  xlab("S&P 500 returns") + ylab("Density")
 
 
 hist(VIX.return, prob=TRUE, breaks=200, col="light blue", xlab = "S&P 500 returns", main = "Histogram of S&P 500 returns", 

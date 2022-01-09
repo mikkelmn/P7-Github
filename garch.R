@@ -44,14 +44,14 @@ garchfit_norm
 ts.plot(garchfit_norm@fit$z)
 
 # Model validation
-par(mfrow=c(1,2))
-acf(garchfit_norm@fit$z, main = "ACF of the standardized residuals") # acf of the standardized residuals
-acf(garchfit_norm@fit$z^2, main = "ACF of the squared standardized residuals") # acf of (standardized residuals)^2 
-dev.off
-par(mfrow=c(1,2))
+autoplot(acf(garchfit_norm@fit$z), main = "ACF of the standardized residuals") + # acf of the standardized residuals
+  autoplot(acf(garchfit_norm@fit$z^2), main = "ACF of the standardized squared residuals") # acf of (standardized residuals)^2 
+
+par(mfrow = c(1,2))
 plot(garchfit_norm, which = 9) # QQ plot of the standardized residuals
 plot(garchfit_norm, which = 8)
 dev.off
+
 
 #-------------------------------------------------------------------------------
 
@@ -95,10 +95,9 @@ garchfit_sstd = ugarchfit(data = returns, spec = garchspec_sstd, solver = "gosol
 garchfit_sstd
 
 # Model validation
-par(mfrow = c(1,2))
-acf(garch22fit_sstd@fit$z, main = "ACF of the standardized residuals") # acf of the standardized residuals
-acf(garch22fit_sstd@fit$z^2, main = "ACF of the squared standardized residuals") # acf of (standardized residuals)^2 
-dev.off
+autoplot(acf(garchfit_sstd@fit$z), main = "ACF of the standardized residuals") + # acf of the standardized residuals
+  autoplot(acf(garchfit_sstd@fit$z^2), main = "ACF of the standardized squared residuals") # acf of (standardized residuals)^2 
+
 par(mfrow = c(1,2))
 plot(garch22fit_sstd, which = 9) # QQ plot of the standardized residuals
 plot(garch22fit_sstd, which = 8)
@@ -161,9 +160,10 @@ ccf_ged = ccf(garch22fit_ged@fit$sigma, as.ts(returns))
 
 layout(matrix(c(0,1,1,0,2,2,3,3), 2, 4, byrow = TRUE))
 plot(ccf_norm[ccf_norm$lag[36:71],], main = expression(paste(hat(rho)(sigma[t], epsilon[t-h]), " where " , eta[t], " is standard normal")), las =1)
-plot(ccf_sstd[ccf_sstd$lag[36:71],], main = expression(paste(hat(rho)(sigma[t], epsilon[t-h]), " where " , eta[t], " is SSTD")), las =1)
+autoplot(plot(ccf_sstd[ccf_sstd$lag[36:71],]), main = expression(paste(hat(rho)(sigma[t], epsilon[t-h]), " where " , eta[t], " is SSTD")), las =1)
 plot(ccf_ged[ccf_ged$lag[36:71],], main = expression(paste(hat(rho)(sigma[t], epsilon[t-h]), " where " , eta[t], " is GED")), las =1)
 
+autoplot(ccf_sstd, main = "CCF between the volatility and the returns") + xlim(c(0,36))
 
 # Simulations
 # SSTD

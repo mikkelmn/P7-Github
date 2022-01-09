@@ -50,10 +50,9 @@ mean(tgarchfit_norm@fit$sigma-tgarchfit_sstd@fit$sigma)
 mean(gjrgarchfit_norm@fit$sigma-gjrgarchfit_sstd@fit$sigma)
 
 # Model validation
-par(mfrow = c(1,2))
-acf(egarch33fit_norm@fit$z, main = "ACF of the standardized residuals") # acf of the standardized residuals
-acf(egarch33fit_norm@fit$z,  main = "ACF of the squared standardized residuals") # acf of (standardized residuals)^2 
-dev.off
+autoplot(acf(egarch33fit_norm@fit$z), main = "ACF of the standardized residuals") + # acf of the standardized residuals
+  autoplot(acf(egarch33fit_norm@fit$z^2),  main = "ACF of the standardized squared residuals") # acf of (standardized residuals)^2 
+
 par(mfrow = c(1,2))
 plot(egarch33fit_norm, which = 9) # QQ plot of the standardized residuals
 plot(egarch33fit_norm, which = 8)
@@ -100,11 +99,11 @@ egarchfit_sstd = ugarchfit(data = returns, spec = egarchspec_sstd, solver = "gos
                             solver.control=list(trace = 1))
 egarchfit_sstd
 plot.ts(egarchfit_sstd@fit$z)
+
 # Model validation
-par(mfrow = c(1,2))
-acf(egarchfit_sstd@fit$z, main = "ACF of the standardized residuals") # acf of the standardized residuals
-acf(egarchfit_sstd@fit$z,  main = "ACF of the squared standardized residuals") # acf of (standardized residuals)^2 
-dev.off
+autoplot(acf(egarchfit_sstd@fit$z), main = "ACF of the standardized residuals") + # acf of the standardized residuals
+  autoplot(acf(egarchfit_sstd@fit$z^2),  main = "ACF of the standardized squared residuals") # acf of (standardized residuals)^2 
+
 par(mfrow = c(1,2))
 plot(egarchfit_sstd, which = 9) # QQ plot of the standardized residuals
 plot(egarchfit_sstd, which = 8)

@@ -38,10 +38,9 @@ tgarchfit_norm
 plot(tgarchfit_norm)
 
 # Model validation
-par(mfrow = c(1,2))
-acf(tgarchfit_norm@fit$z, main = "ACF of the standardized residuals") # acf of the standardized residuals
-acf(tgarchfit_norm@fit$z,  main = "ACF of the squared standardized residuals") # acf of (standardized residuals)^2 
-dev.off
+autoplot(acf(tgarchfit_norm@fit$z), main = "ACF of the standardized residuals") +  # acf of the standardized residuals
+  autoplot(acf(tgarchfit_norm@fit$z^2),  main = "ACF of the standardized squared residuals") # acf of (standardized residuals)^2 
+
 par(mfrow = c(1,2))
 plot(tgarchfit_norm, which = 9) # QQ plot of the standardized residuals
 plot(tgarchfit_norm, which = 8)
@@ -89,10 +88,9 @@ tgarchfit_sstd
 
 plot(tgarchfit_sstd)
 # Model validation
-par(mfrow = c(1,2))
-acf(tgarchfit_sstd@fit$z, main = "ACF of the standardized residuals") # acf of the standardized residuals
-acf(tgarchfit_sstd@fit$z,  main = "ACF of the squared standardized residuals") # acf of (standardized residuals)^2 
-dev.off
+autoplot(acf(tgarchfit_sstd@fit$z), main = "ACF of the standardized residuals") + # acf of the standardized residuals
+  autoplot(acf(tgarchfit_sstd@fit$z^2),  main = "ACF of the standardized squared residuals") # acf of (standardized residuals)^2 
+
 par(mfrow = c(1,2))
 plot(tgarchfit_sstd, which = 9) # QQ plot of the standardized residuals
 plot(tgarchfit_sstd, which = 8)

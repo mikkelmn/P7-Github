@@ -37,10 +37,9 @@ gjrgarchfit_norm = ugarchfit(data = returns, spec = gjrgarchspec_norm, solver = 
 gjrgarchfit_norm
 
 # Model validation
-par(mfrow = c(1,2))
-acf(gjrgarchfit_norm@fit$z, main = "ACF of the standardized residuals") # acf of the standardized residuals
-acf(gjrgarchfit_norm@fit$z,  main = "ACF of the squared standardized residuals") # acf of (standardized residuals)^2 
-dev.off
+autoplot(acf(gjrgarchfit_norm@fit$z), main = "ACF of the standardized residuals") + # acf of the standardized residuals
+  autoplot(acf(gjrgarchfit_norm@fit$z^2),  main = "ACF of the standardized squared residuals") # acf of (standardized residuals)^2 
+
 par(mfrow = c(1,2))
 plot(gjrgarchfit_norm, which = 9) # QQ plot of the standardized residuals
 plot(gjrgarchfit_norm, which = 8)
@@ -89,10 +88,9 @@ gjrgarchfit_sstd = ugarchfit(data = returns, spec = gjrgarchspec_sstd, solver = 
 gjrgarchfit_sstd
 
 # Model validation
-par(mfrow = c(1,2))
-acf(gjrgarchfit_sstd@fit$z, main = "ACF of the standardized residuals") # acf of the standardized residuals
-acf(gjrgarchfit_sstd@fit$z,  main = "ACF of the squared standardized residuals") # acf of (standardized residuals)^2 
-dev.off
+autoplot(acf(gjrgarchfit_sstd@fit$z), main = "ACF of the standardized residuals") + # acf of the standardized residuals
+  autoplot(acf(gjrgarchfit_sstd@fit$z^2),  main = "ACF of the standardized squared residuals") # acf of (standardized residuals)^2 
+
 par(mfrow = c(1,2))
 plot(gjrgarchfit_sstd, which = 9) # QQ plot of the standardized residuals
 plot(gjrgarchfit_sstd, which = 8)
