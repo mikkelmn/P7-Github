@@ -410,6 +410,11 @@ sigma4 = as.xts(vix)
   ((autoplot(sigma3, main = "TGARCH, SSTD(0,1)")+ ylim(0.003,0.075) + ylab(expression(sigma[t])) + xlab("")) + 
    (autoplot(sigma4, main = "GJR-GARCH, SSTD(0,1)")+ ylim(0.003,0.075) + ylab(expression(sigma[t])) + xlab("")))
 
+
+((autoplot(sigma1, main = "GARCH, SSTD(0,1)")+ ylim(0.003,0.075) + ylab(expression(sigma[t])) + xlab(""))) /
+((autoplot(sigma4, main = "GJR-GARCH, SSTD(0,1)")+ ylim(0.003,0.075) + ylab(expression(sigma[t])) + xlab("")))
+
+
 # 4x1 plot
 (autoplot(sigma1, main = "GARCH, SSTD(0,1)")+ ylim(0.003,0.075) + ylab(expression(sigma[t])) + xlab("")) / 
     (autoplot(sigma2, main = "EGARCH, SSTD(0,1)")+ ylim(0.003,0.075) + ylab(expression(sigma[t])) + xlab("")) /
