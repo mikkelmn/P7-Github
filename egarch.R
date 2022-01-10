@@ -31,11 +31,11 @@ egarch33spec_norm = ugarchspec(mean.model = list(armaOrder = c(0,0),
                                                 include.mean = TRUE), 
                               variance.model = list(garchOrder = c(1,1), 
                                                     model = "eGARCH"),
-                              distribution.model = "norm")
+                              distribution.model = "nig")
 egarch33fit_norm = ugarchfit(data = returns, spec = egarch33spec_norm, solver = "gosolnp",
                             solver.control=list(trace = 1))
-plot(as.xts(egarch33fit_norm@fit$sigma))
-egarch33fit_norm@fit$sigma
+plot(egarch33fit_norm)
+egarch33fit_norm
 
 vix1 = data.frame(VIX)
 vix = vix1 %>% transmute(gjrgarchfit_sstd@fit$sigma)
@@ -98,8 +98,12 @@ egarchspec_sstd = ugarchspec(mean.model = list(armaOrder = c(0,0),
 egarchfit_sstd = ugarchfit(data = returns, spec = egarchspec_sstd, solver = "gosolnp",
                             solver.control=list(trace = 1))
 egarchfit_sstd
+<<<<<<< HEAD
 plot.ts(egarchfit_sstd@fit$z)
 
+=======
+plot(egarchfit_sstd)
+>>>>>>> d9fe5cf6a84069459fbfa420ae21c5d96f6434c3
 # Model validation
 autoplot(acf(egarchfit_sstd@fit$z), main = "ACF of the standardized residuals") + # acf of the standardized residuals
   autoplot(acf(egarchfit_sstd@fit$z^2),  main = "ACF of the standardized squared residuals") # acf of (standardized residuals)^2 

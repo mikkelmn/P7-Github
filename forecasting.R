@@ -18,6 +18,11 @@ getSymbols("TB3MS", src = "FRED")
 plot(TB3MS["1990-01-01/2021-10-31"])
 plot(DGS3MO)
 
+kurtosis(VIX)
+hist(VIX)
+sd(VIX)
+mean(VIX)
+
 # rolling forecast ---------------
 
 train = returns["/2020-12-31"]
@@ -95,11 +100,11 @@ ggplot(data = df) + geom_line(aes(x = Index, y = VIX, col = "Actual VIX")) +
 
 # determining AR(p) of VIX -----------------
 
-auto.arima(VIX["/2021-01-01"], max.q = 0)
+auto.arima(VIX["/2020-12-31"], max.q = 0)
 acf(VIX["/2011-10-31"])
 pacf(VIX["/2011-10-31"])
-acf(diff(VIX["/2011-10-31"]), na.action = na.pass)
-pacf(diff(VIX["/2011-10-31"]), na.action = na.pass)
+acf(diff(VIX["/2020-12-31"]), na.action = na.pass)
+pacf(diff(VIX["/2020-12-31"]), na.action = na.pass)
 
 # forecast VIX using volatility of returns and lags of VIX -----------
 
