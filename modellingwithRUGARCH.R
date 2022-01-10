@@ -40,13 +40,12 @@ curve(dnorm(x, mean = mean(returns), sd = sd(returns)),
 # according to AIC and BIC, where distribution is assumed to be 
 # Gaussian -----------------------------------------------------
 
-aic_arma_order = matrix(0, nrow = 12, ncol = 12)
-bic_arma_order = matrix(0, nrow = 12, ncol = 12)
+bic_arma_order = matrix(0, nrow = 16, ncol = 16)
 plan(multisession, workers = 8)
 set.seed(91)
 tic()
-for (k in 0:2) {
-  for (l in 0:2) {
+for (k in 0:3) {
+  for (l in 0:3) {
     for (i in 1:4) {
       for (j in 1:4) {
         tryCatch({
@@ -54,12 +53,12 @@ for (k in 0:2) {
                                                         model = "sGARCH"), 
                                   mean.model = list(armaOrder=c(k,l),
                                                     include.mean = FALSE),
-                                  distribution.model = "norm")
+                                  distribution.model = "sstd")
           garch_fit = ugarchfit(spec=garch_spec, data=returns,
                                 solver.control = list(trace = 1, n.restarts = 1),
                                 solver = "gosolnp",
                                 parallel = T, cores = 8)
-          aic_arma_order[(k*4+i),(l*4+j)] = infocriteria(garch_fit)[1]
+          # aic_arma_order[(k*4+i),(l*4+j)] = infocriteria(garch_fit)[1]
           bic_arma_order[(k*4+i),(l*4+j)] = infocriteria(garch_fit)[2]
         }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
       }
@@ -68,20 +67,64 @@ for (k in 0:2) {
 }
 toc() # 700 sec
 
-aic_arma_order
 bic_arma_order
 
-aic_arma_order[aic_arma_order == 0] = NA
 bic_arma_order[bic_arma_order == 0] = NA
 
-par(mar=c(5, 4, 4, 5))
-plot(aic_arma_order, col=heat.colors(n = 10, alpha = 0.9), digits = 4, 
-     cex = 0.8)
-plot(bic_arma_order, col=heat.colors(n = 10, alpha = 0.9), digits = 4, 
-     cex = 0.8)
-which.min(aic_arma_order)
-which.min(bic_arma_order)
+colnames(bic_arma_order) = rep(" ",16)
+rownames(bic_arma_order) = rep(" ",16)
 
+xtick = c(expression(paste(q[A],"=0, ",q[G],"=1")),
+          expression(paste(q[A],"=0, ",q[G],"=2")),
+          expression(paste(q[A],"=0, ",q[G],"=3")),
+          expression(paste(q[A],"=0, ",q[G],"=4")),
+          expression(paste(q[A],"=1, ",q[G],"=1")),
+          expression(paste(q[A],"=1, ",q[G],"=2")),
+          expression(paste(q[A],"=1, ",q[G],"=3")),
+          expression(paste(q[A],"=1, ",q[G],"=4")),
+          expression(paste(q[A],"=2, ",q[G],"=1")),
+          expression(paste(q[A],"=2, ",q[G],"=2")),
+          expression(paste(q[A],"=2, ",q[G],"=3")),
+          expression(paste(q[A],"=2, ",q[G],"=4")),
+          expression(paste(q[A],"=3, ",q[G],"=1")),
+          expression(paste(q[A],"=3, ",q[G],"=2")),
+          expression(paste(q[A],"=3, ",q[G],"=3")),
+          expression(paste(q[A],"=3, ",q[G],"=4"))
+          )
+ytick = c(expression(paste(p[A],"=0, ",p[G],"=1")),
+          expression(paste(p[A],"=0, ",p[G],"=2")),
+          expression(paste(p[A],"=0, ",p[G],"=3")),
+          expression(paste(p[A],"=0, ",p[G],"=4")),
+          expression(paste(p[A],"=1, ",p[G],"=1")),
+          expression(paste(p[A],"=1, ",p[G],"=2")),
+          expression(paste(p[A],"=1, ",p[G],"=3")),
+          expression(paste(p[A],"=1, ",p[G],"=4")),
+          expression(paste(p[A],"=2, ",p[G],"=1")),
+          expression(paste(p[A],"=2, ",p[G],"=2")),
+          expression(paste(p[A],"=2, ",p[G],"=3")),
+          expression(paste(p[A],"=2, ",p[G],"=4")),
+          expression(paste(p[A],"=3, ",p[G],"=1")),
+          expression(paste(p[A],"=3, ",p[G],"=2")),
+          expression(paste(p[A],"=3, ",p[G],"=3")),
+          expression(paste(p[A],"=3, ",p[G],"=4"))
+          )
+par(mar=c(2, 4, 4, 4.5))
+plot(bic_arma_order, col=heat.colors(n = 10, alpha = 0.9), digits = 4, 
+     cex = 0.8, main = "", xlab='', ylab='', axis.col=3)
+axis(side = 3, at = seq(1,16,1), labels = xtick, las = 3, cex.axis = 0.9)
+axis(side = 2, at = seq(1,16,1), labels = ytick, las = 2, cex.axis = 0.9)
+
+which.min(bic_arma_order)
+which(is.na(bic_arma_order))
+
+ytick = c("P=3,p=4","P=3,p=3","P=3,p=2","P=3,p=1",
+          "P=2,p=4","P=2,p=3","P=2,p=2","P=2,p=1",
+          "P=1,p=4","P=1,p=3","P=1,p=2","P=1,p=1",
+          "P=0,p=4","P=0,p=3","P=0,p=2","P=0,p=1")
+xtick = c("Q=0,q=1","Q=0,q=2","Q=0,q=3","Q=0,q=4",
+          "Q=1,q=1","Q=1,q=2","Q=1,q=3","Q=1,q=4",
+          "Q=2,q=1","Q=2,q=2","Q=2,q=3","Q=2,q=4",
+          "Q=3,q=1","Q=3,q=2","Q=3,q=3","Q=3,q=4")
 
 # --------------------------------------------------------------
 
